@@ -1,62 +1,49 @@
-# 🧭 CS 301 Group Project — README Template
-
-Use this README as the front page of your team’s GitHub repository.  
-Fill out every section clearly. The **FlowSpace** example is shown in *italics* to demonstrate what a complete entry looks like.
 
 ---
 
 ## 📘 Project Name
-**Your Entry:**  
-> *(e.g., FlowSpace)*  
-A smart scheduling assistant that helps users maximize contiguous blocks of personal well-being time by reorganizing flexible events in their calendar.
-
+Task Mentor 
+ 
+A web application that connects college students with professionals through structured, task-based mentorship
 ---
 
 ## 👥 Group Members / Contributors
-**Your Entry:**  
+
 | Name | Role | GitHub Username |
 |------|------|-----------------|
-| Alice Example | Project Manager / Developer | @alice-example |
-| Bob Example | Frontend Developer | @bob-example |
-| Carol Example | Backend Developer | @carol-example |
-| Dave Example | QA / Documentation | @dave-example |
+| Tevita Mathias |  Developer | @aldohl95 |
+| Vietnam(Michael) Ngo | Frontend Developer | @vietnamngo |
+| Tyson Ringelstetter | Backend Developer | @TysonnR |
+| James No | QA / Documentation | @james-no |
 
-*(Include all team members with their primary roles.)*
 
 ---
 
 ## 🧭 Brief Background About the Project
-**Your Entry:**  
-> *(Example:)*  
-Modern life often fragments our days with meetings, alerts, and micro-tasks. **FlowSpace** helps users reclaim their time by analyzing their calendar and reorganizing flexible events to preserve long, uninterrupted periods of personal focus or rest.
-
-Your description should summarize:
-- The **problem** your app addresses  
-- The **target users**  
-- The **benefit/value** your solution provides  
-
+  
+Task Mentor addresses the inefficiencies of traditional mentorship by
+enabling specific, time-bounded interactions. 
+Mentors offer a "task menu" of services (e.g., "Resume Review - 30 min"), 
+and students book exactly the help they need.
 ---
 
 ## ⚙️ Current Features
-**Your Entry:**  
-> *(Example:)*  
-- Well-Being Block Optimizer — finds the longest contiguous free time each day  
-- Smart Re-Scheduling — recommends moving flexible events to protect downtime  
-- Balance Dashboard — visualizes work vs. personal time each week  
-- Reflection Prompts — short daily check-ins that improve future suggestions  
-- Notification System — gentle reminders to preserve your “flow blocks”
 
-List all features that are **currently implemented** or **in progress**.
+-  Secure user authentication with JWT -**in progress**
+-  Comprehensive student and mentor profiles -**in progress**
+-  Task menu system for mentors to define offerings -**in progress**
+-  Advanced mentor search and filtering -**in progress**
+-  Session booking with email confirmations -**in progress**
+-  Responsive design for desktop and mobile -**in progress**
 
 ---
 
 ## 🧩 Planned Features / Future Work
-**Your Entry:**  
-> *(Example:)*  
-- Calendar sync (Google, Outlook, Apple)  
-- AI-assisted schedule optimization  
-- Mood trend visualizations  
-- Shared calendar support for households or teams
+
+- Sesion Dashboard
+- Rating & Review System
+- Advanced Scheduling
+- Messaging System
 
 ---
 
@@ -65,22 +52,21 @@ List all features that are **currently implemented** or **in progress**.
 
 | **Week** | **Milestone / Deliverables** | **Owners** | **Evidence (PRs/Links/Demos)** |
 |-----------|------------------------------|-------------|--------------------------------|
-| 1 | Define functional requirements; set up repo | Alice, Bob | README.md, requirements doc |
-| 2 | Create wireframes + initial backend skeleton | Carol, Dave | `/design`, `/api` folders |
-| 3 | Implement Core Function A (calendar parser) | Team | Commit hash, screenshots |
-| 4 | Integrate dashboard + basic UI | Bob | Deployed demo |
-| 5 | Add rescheduling logic | Carol | Pull request #23 |
-| 6 | Refine algorithm, write tests | Dave | Test coverage report |
-| 7 | Add user reflections + notifications | Alice | Feature branch merge |
-| 8 | Final polish + presentation | Team | Video demo, final slides |
+| 1 | Authentication & Database Foundation | Tean | Spring security, authentication UI, user login/registration |
+| 2 | User Profiles | Team | Crud, Database persistence, UI profile Creation |
+| 3 | Task System & public Profile | Team | Task creation/deletion, Task Categorization, UI layout for task display |
+| 4 | Search & Discovery | Team | Mentor Discovery Page, Filters |
+| 5 | Booking System | Team | Booking Requests, Proper Booking relationships, Mentor view booking |
+| 6 | Booking Completion & Core Polish | Team | Booking Accept/Decline, Double Booking Prevention, Status updates in UI |
+| 7 | Buffer Week | Team | Code cleanup, Paths tested, Main Features tested |
+| 8 | Deployment preperation | Team |Staging enviornment functional, Video demo, final slides |
 
 ---
 
 ## 🧠 Definition of Done (DoD)
 A feature is **done** when:
 - Code is reviewed and merged into `main`  
-- All acceptance criteria are met  
-- Unit tests pass in CI/CD  
+- All acceptance criteria are met   
 - Demo shows functional feature without breaking existing functionality  
 - Documentation (README / inline comments) is up to date  
 
@@ -89,25 +75,19 @@ A feature is **done** when:
 ## 💻 How to Run
 
 **Your Entry:**
-> *(Example: FlowSpace)*
+
 
 ### 1. Clone Repository
 ```
-git clone https://github.com/example-url/flowspace.git
-cd flowspace
+git clone https://github.com/don-strong/task-mentor.git
+cd task-mentor
 ```
 
 ### 2. Backend Setup (Python/Flask)
 ```
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-flask run
-```
+TBD
 
 ### 3. Frontend Setup (React)
 ```
-cd client
-npm install
-npm start
+TBD
 ```
