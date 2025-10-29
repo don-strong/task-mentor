@@ -1,0 +1,33 @@
+/mvnw text eol=lf
+*.cmd text eol=crlf
+# Auto-detect text files and normalize line endings
+* text=auto
+
+# Shell scripts: enforce LF (Unix style)
+*.sh text eol=lf
+
+# Windows batch scripts: enforce CRLF (Windows style)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Java source files: LF (works on any OS)
+*.java text eol=lf
+
+# Maven wrapper scripts
+mvnw text eol=lf
+mvnw.cmd text eol=crlf
+
+# XML, JSON, YAML: LF
+*.xml text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Ignore binary files from line-ending normalization
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.jar binary
+*.class binary
