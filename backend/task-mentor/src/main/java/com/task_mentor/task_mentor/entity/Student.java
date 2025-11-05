@@ -21,6 +21,10 @@ public class Student {
     @Column(name = "user_id", nullable = false)
     private Long userId;
     
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false, insertable = false, updatable = false)
+    private User user;
+    
     @Column(name = "name", nullable = false, length = 150)
     private String name;
     
@@ -116,6 +120,14 @@ public class Student {
     
     public void setProfilePhotoUrl(String profilePhotoUrl) {
         this.profilePhotoUrl = profilePhotoUrl;
+    }
+    
+    public User getUser() {
+        return user;
+    }
+    
+    public void setUser(User user) {
+        this.user = user;
     }
     
     public LocalDateTime getCreatedAt() {

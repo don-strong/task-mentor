@@ -2,6 +2,7 @@ package com.task_mentor.task_mentor.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * User Entity - Stores basic authentication information for all users
@@ -32,6 +33,12 @@ public class User {
     
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+    
+    @OneToMany(mappedBy = "user")
+    private List<Student> students;
+    
+    @OneToMany(mappedBy = "user")
+    private List<Mentor> mentors;
     
     // Constructors
     public User() {
@@ -93,6 +100,22 @@ public class User {
     
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    
+    public List<Student> getStudents() {
+        return students;
+    }
+    
+    public void setStudents(List<Student> students) {
+        this.students = students;
+    }
+    
+    public List<Mentor> getMentors() {
+        return mentors;
+    }
+    
+    public void setMentors(List<Mentor> mentors) {
+        this.mentors = mentors;
     }
     
     @PrePersist

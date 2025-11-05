@@ -21,6 +21,10 @@ public class Task {
     @Column(name = "mentor_id", nullable = false)
     private Long mentorId;
     
+    @ManyToOne
+    @JoinColumn(name = "mentor_id", nullable = false, insertable = false, updatable = false)
+    private Mentor mentor;
+    
     @Column(name = "title", nullable = false, length = 200)
     private String title;
     
@@ -96,6 +100,14 @@ public class Task {
     
     public void setCategory(String category) {
         this.category = category;
+    }
+    
+    public Mentor getMentor() {
+        return mentor;
+    }
+    
+    public void setMentor(Mentor mentor) {
+        this.mentor = mentor;
     }
     
     public LocalDateTime getCreatedAt() {
