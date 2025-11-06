@@ -1,0 +1,24 @@
+# Application Name
+spring.application.name=task-mentor
+
+# ============================================
+# DATABASE CONNECTION - LOCAL SETUP
+# ============================================
+# SETUP INSTRUCTIONS:
+# 1. Copy this file and rename it to: application.properties
+# 2. Replace YOUR_USERNAME and YOUR_PASSWORD with your PostgreSQL credentials
+# 3. Make sure you've created the 'taskmentor' database in PostgreSQL
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/taskmentor
+spring.datasource.username=YOUR_USERNAME
+spring.datasource.password=YOUR_PASSWORD
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# ============================================
+# JPA / HIBERNATE SETTINGS
+# ============================================
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+```
