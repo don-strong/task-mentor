@@ -91,3 +91,19 @@ TBD
 ```
 TBD
 ```
+### 4. Configure Database Connection
+   
+   Navigate to: `backend/task-mentor/src/main/resources/`
+   
+   a. Copy the example file:
+```bash
+   cp application.properties.example application.properties
+```
+   
+   b. Edit `application.properties` and update with YOUR local PostgreSQL credentials:
+```properties
+   spring.datasource.username=YOUR_POSTGRES_USERNAME
+   spring.datasource.password=YOUR_POSTGRES_PASSWORD
+```
+   
+   ⚠️ **IMPORTANT:** Never commit `application.properties` with real passwords! This file is in `.gitignore`.
