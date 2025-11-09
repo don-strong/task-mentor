@@ -140,8 +140,8 @@ public class MentorService {
             throw new IllegalArgumentException("Mentor name is required");
         }
         
-        if (mentor.getUserId() == null) {
-            throw new IllegalArgumentException("User ID is required");
+        if (mentor.getUser() == null || mentor.getUser().getUserId() == null) {
+            throw new IllegalArgumentException("User is required");
         }
         
         // Optional: Validate years of experience is reasonable

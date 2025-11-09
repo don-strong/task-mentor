@@ -29,9 +29,14 @@ public class StudentService {
      * Validates that student doesn't already exist for this user
      */
     public Student createStudent(Student student) {
+        // Validation: Check if user is provided
+        if (student.getUser() == null || student.getUser().getUserId() == null) {
+            throw new IllegalArgumentException("User is required for student profile");
+        }
+        
         // Validation: Check if student profile already exists for this user
-        if (studentRepository.existsByUserId(student.getUserId())) {
-            throw new IllegalArgumentException("Student profile already exists for user ID: " + student.getUserId());
+        if (studentRepository.existsByUserId(student.getUser().getUserId())) {
+            throw new IllegalArgumentException("Student profile already exists for user ID: " + student.getUser().getUserId());
         }
         
         // Validation: Required fields
@@ -137,8 +142,8 @@ public class StudentService {
             throw new IllegalArgumentException("Student name is required");
         }
         
-        if (student.getUserId() == null) {
-            throw new IllegalArgumentException("User ID is required");
+        if (student.getUser() == null || student.getUser().getUserId() == null) {
+            throw new IllegalArgumentException("User is required");
         }
         
         // Optional: Validate graduation year is reasonable
