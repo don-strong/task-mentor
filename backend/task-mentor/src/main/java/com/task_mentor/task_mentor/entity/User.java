@@ -30,7 +30,7 @@ public class User {
     @Column(name = "account_type", nullable = false, length = 20)
     private String accountType; // 'student' or 'mentor'
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @OneToOne(mappedBy = "user")

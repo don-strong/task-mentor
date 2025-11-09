@@ -20,7 +20,7 @@ public class Student {
 
 
     @OneToOne
-    @JoinColumn(name = "user_id", nullable = false, insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(name = "name", nullable = false, length = 150)
@@ -41,7 +41,7 @@ public class Student {
     @Column(name = "profile_photo_url", length = 500)
     private String profilePhotoUrl;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     // Constructors

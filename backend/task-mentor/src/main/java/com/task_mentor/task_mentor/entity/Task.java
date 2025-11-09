@@ -20,7 +20,7 @@ public class Task {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mentor_id")
-    private Mentor mentorId;
+    private Mentor mentor;
 
 
     @Column(name = "title", nullable = false, length = 200)
@@ -35,7 +35,7 @@ public class Task {
     @Column(name = "category", length = 100)
     private String category;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     // Constructors
@@ -43,9 +43,9 @@ public class Task {
 
     }
 
-    public Task(Long taskId, Mentor mentorId, String title, String description, Integer durationMinutes, String category, LocalDateTime createdAt) {
+    public Task(Long taskId, Mentor mentor, String title, String description, Integer durationMinutes, String category, LocalDateTime createdAt) {
         this.taskId = taskId;
-        this.mentorId = mentorId;
+        this.mentor = mentor;
         this.title = title;
         this.description = description;
         this.durationMinutes = durationMinutes;
@@ -61,12 +61,12 @@ public class Task {
         this.taskId = taskId;
     }
 
-    public Mentor getMentorId() {
-        return mentorId;
+    public Mentor getMentor() {
+        return mentor;
     }
 
-    public void setMentor(Mentor mentorId) {
-        this.mentorId = mentorId;
+    public void setMentor(Mentor mentor) {
+        this.mentor = mentor;
     }
 
     public String getTitle() {
@@ -120,7 +120,7 @@ public class Task {
     public String toString() {
         return "Task{" +
                 "taskId=" + taskId +
-                ", mentorId=" + mentorId +
+                ", mentorId=" + mentor +
                 ", title='" + title + '\'' +
                 ", durationMinutes=" + durationMinutes +
                 ", category='" + category + '\'' +

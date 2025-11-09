@@ -18,12 +18,11 @@ public class Booking {
     @Column(name = "booking_id")
     private Long bookingId;
 
-    @ManyToOne
-    @JoinColumn(name ="student_id", nullable = false )
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mentor_id", nullable = false)
     private Mentor mentor;
 
@@ -37,7 +36,7 @@ public class Booking {
     @Column(name = "status", length = 20)
     private String status; // 'pending', 'accepted', 'declined', 'cancelled'
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
@@ -45,21 +44,22 @@ public class Booking {
 
     // Constructors
     public Booking() {
-
+        this.status = "pending";
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public Booking(Long bookingId, Student student, Mentor mentor, Task task, LocalDateTime proposedDatetime,
-                   String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
-        this.bookingId = bookingId;
+    public Booking(Student student, Mentor mentor, Task task, LocalDateTime proposedDatetime) {
         this.student = student;
         this.mentor = mentor;
         this.task = task;
         this.proposedDatetime = proposedDatetime;
-        this.status = status;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.status = "pending";
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
+    // Getters and Setters
     public Long getBookingId() {
         return bookingId;
     }
@@ -72,23 +72,23 @@ public class Booking {
         return student;
     }
 
-    public void setStudent(Student student) {
+    public void setStudentId(Student student) {
         this.student = student;
     }
 
-    public Mentor getMentor() {
+    public Mentor getMentorId() {
         return mentor;
     }
 
-    public void setMentor(Mentor mentor) {
+    public void setMentorId(Mentor mentor) {
         this.mentor = mentor;
     }
 
-    public Task getTask() {
+    public Task getTaskId() {
         return task;
     }
 
-    public void setTask(Task task) {
+    public void setTaskId(Task task) {
         this.task = task;
     }
 
@@ -106,6 +106,7 @@ public class Booking {
 
     public void setStatus(String status) {
         this.status = status;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public LocalDateTime getCreatedAt() {
@@ -122,6 +123,17 @@ public class Booking {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+            createdAt = LocalDateTime.now();
+
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
     @Override
