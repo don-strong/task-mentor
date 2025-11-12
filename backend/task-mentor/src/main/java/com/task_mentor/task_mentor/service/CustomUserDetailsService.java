@@ -1,5 +1,6 @@
 package com.task_mentor.task_mentor.service;
 
+
 import com.task_mentor.task_mentor.entity.User;
 import com.task_mentor.task_mentor.repository.UserRepository;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,15 +20,17 @@ public class CustomUserDetailsService implements UserDetailsService
         this.userRepository = userRepository;
     }
 
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+
+        String role = "ROLE_" + user.getAccountType().toUpperCase();
 
         return org.springframework.security.core.userdetails.User
-                .withUsername(user.getUsername())
+                .withUsername(user.getEmail())
                 .password(user.getPassword())
-                .authorities(Collections.singletonList(new SimpleGrantedAuthority(user.getRole())))
-                .disabled(!user.isEnabled())
+                .authorities(Collections.singletonList(new SimpleGrantedAuthority(role)))
+                .disabled(false)
                 .build();
     }
 }

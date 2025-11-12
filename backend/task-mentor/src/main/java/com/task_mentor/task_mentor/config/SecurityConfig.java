@@ -1,8 +1,12 @@
 package com.task_mentor.task_mentor.config;
 
+import com.task_mentor.task_mentor.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,23 +17,39 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig
 {
-    // Password Encoder Bean: encrypts passwords using BCrypt, automatically salts and hashes passwords
+    private final CustomUserDetailsService userDetailsService;
+
+    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Security Filter Chain Bean: configures HTTP security settings
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService); // use email-based service
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Configure which endpoints need authentication
+                .authenticationProvider(authenticationProvider()) // <-- add this line
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/test/public" ).permitAll() // Public endpoints (login, register)
-                        .anyRequest().authenticated() // Everything else requires authentication
+                        .requestMatchers("/api/auth/**", "/api/test/public").permitAll()
+                        .anyRequest().authenticated()
                 )
-                // Enable HTTP Basic Authentication
                 .httpBasic(Customizer.withDefaults())
-                // ! Disable CSRF for REST APIs (required for Postman testing ! re-Enable after testing !)
                 .csrf(csrf -> csrf.disable());
 
         return http.build();

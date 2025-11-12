@@ -1,64 +1,41 @@
 package com.task_mentor.task_mentor.repository;
 
+
 import com.task_mentor.task_mentor.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-<<<<<<< HEAD
-import java.util.Optional;
-
-@Repository
-public interface UserRepository extends JpaRepository<User, Long>
-{
-    // Spring Data JPA automatically implements this method to find a user by username
-    Optional<User> findByUsername(String username);
-
-    // Spring Data JPA automatically implements this method to check existence by username
-    boolean existsByUsername(String username);
-
-    // Spring Data JPA automatically implements this method to check existence by email
-    boolean existsByEmail(String email);
-=======
 import java.util.List;
 import java.util.Optional;
 
 /**
  * UserRepository - Spring Data JPA repository for User entity
  * Provides CRUD operations and custom query methods for users table
- * 
+ *
  * @author James No
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    
+
     /**
      * Find a user by email address
      * Used for login and checking if email already exists during registration
      */
     Optional<User> findByEmail(String email);
-    
-    /**
-     * Find a user by username
-     * Used for checking if username already exists during registration
-     */
-    Optional<User> findByUsername(String username);
-    
+
+
+
     /**
      * Find all users by account type (student or mentor)
      * Useful for admin dashboards or analytics
      */
     List<User> findByAccountType(String accountType);
-    
+
     /**
      * Check if email already exists in database
      * Returns true if email exists, false otherwise
      */
     boolean existsByEmail(String email);
-    
-    /**
-     * Check if username already exists in database
-     * Returns true if username exists, false otherwise
-     */
-    boolean existsByUsername(String username);
->>>>>>> main
+
+
 }
