@@ -29,12 +29,12 @@ and students book exactly the help they need.
 
 ## ⚙️ Current Features
 
--  Secure user authentication with JWT -**in progress**
--  Comprehensive student and mentor profiles -**in progress**
+-  Secure user authentication with JWT 
+-  Comprehensive student and mentor profiles 
 -  Task menu system for mentors to define offerings -**in progress**
 -  Advanced mentor search and filtering -**in progress**
 -  Session booking with email confirmations -**in progress**
--  Responsive design for desktop and mobile -**in progress**
+-  Responsive design for desktop -**in progress**
 
 ---
 
