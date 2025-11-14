@@ -62,7 +62,9 @@ public class StudentService {
 
     public Student updateStudentProfile(Long userId, String name, String bio, String major, Integer graduationYear,
                                       String careerInterests, String profilePhotoUrl){
-        Student student = studentRepository.findById(userId).orElseThrow(()->
+        // Fixed: changed from findById to findByUserId to match parameter name,
+        // fixes error 400  BAD REQUEST bug when updating profiles
+        Student student = studentRepository.findByUserId(userId).orElseThrow(()->
                 new IllegalArgumentException("Student not found"));
 
         if(name != null && !name.trim().isEmpty()){
