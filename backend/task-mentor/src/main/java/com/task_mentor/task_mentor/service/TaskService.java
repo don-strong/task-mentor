@@ -5,6 +5,7 @@ import com.task_mentor.task_mentor.repository.MentorRepository;
 import com.task_mentor.task_mentor.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,10 +22,12 @@ public class TaskService {
     
     private final TaskRepository taskRepository;
     private final MentorRepository mentorRepository;
+    private final FileStorageService fileStorageService;
     
-    public TaskService(TaskRepository taskRepository, MentorRepository mentorRepository) {
+    public TaskService(TaskRepository taskRepository, MentorRepository mentorRepository, FileStorageService fileStorageService) {
         this.taskRepository = taskRepository;
         this.mentorRepository = mentorRepository;
+        this.fileStorageService = fileStorageService;
     }
     
     /**
@@ -39,6 +42,30 @@ public class TaskService {
         
         // Validation: Required fields and business rules
         validateTask(task);
+        
+        return taskRepository.save(task);
+    }
+    
+    /**
+     * Create a new task with image attachment
+     * Handles file upload and stores file metadata
+     */
+    public Task createTaskWithImage(Task task, MultipartFile imageFile) {
+        // Validation: Check if mentor exists
+        if (!mentorRepository.existsById(task.getMentorId())) {
+            throw new IllegalArgumentException("Mentor not found with ID: " + task.getMentorId());
+        }
+        
+        // Validation: Required fields and business rules
+        validateTask(task);
+        
+        // Handle image upload if provided
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String storedFileName = fileStorageService.storeFile(imageFile);
+            task.setImageFileName(storedFileName);
+            task.setImageUrl("/api/files/task-images/" + storedFileName);
+            task.setImageFileSize(imageFile.getSize());
+        }
         
         return taskRepository.save(task);
     }
@@ -85,12 +112,52 @@ public class TaskService {
     }
     
     /**
+     * Update task with optional new image
+     * If new image provided, deletes old image and stores new one
+     */
+    public Task updateTaskWithImage(Long taskId, Task updatedTask, MultipartFile newImageFile) {
+        Task existing = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+        
+        // Validation: Required fields and business rules
+        validateTask(updatedTask);
+        
+        // Update fields
+        existing.setTitle(updatedTask.getTitle());
+        existing.setDescription(updatedTask.getDescription());
+        existing.setDurationMinutes(updatedTask.getDurationMinutes());
+        existing.setCategory(updatedTask.getCategory());
+        
+        // Handle image update if new file provided
+        if (newImageFile != null && !newImageFile.isEmpty()) {
+            // Delete old image if exists
+            if (existing.getImageFileName() != null) {
+                fileStorageService.deleteFile(existing.getImageFileName());
+            }
+            
+            // Store new image
+            String storedFileName = fileStorageService.storeFile(newImageFile);
+            existing.setImageFileName(storedFileName);
+            existing.setImageUrl("/api/files/task-images/" + storedFileName);
+            existing.setImageFileSize(newImageFile.getSize());
+        }
+        
+        return taskRepository.save(existing);
+    }
+    
+    /**
      * Delete task
+     * Also deletes associated image file if exists
      */
     public void deleteTask(Long taskId) {
-        if (!taskRepository.existsById(taskId)) {
-            throw new IllegalArgumentException("Task not found with ID: " + taskId);
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+        
+        // Delete associated image file if exists
+        if (task.getImageFileName() != null) {
+            fileStorageService.deleteFile(task.getImageFileName());
         }
+        
         taskRepository.deleteById(taskId);
     }
     

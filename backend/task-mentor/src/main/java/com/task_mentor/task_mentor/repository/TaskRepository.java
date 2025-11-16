@@ -2,6 +2,8 @@ package com.task_mentor.task_mentor.repository;
 
 import com.task_mentor.task_mentor.entity.Task;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -56,4 +58,23 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
      * Used for mentor profile statistics
      */
     long countByMentorId(Long mentorId);
+    
+    /**
+     * Find tasks that have image attachments
+     * Useful for displaying tasks with visual content
+     */
+    @Query("SELECT t FROM Task t WHERE t.imageUrl IS NOT NULL AND t.imageUrl <> ''")
+    List<Task> findTasksWithImages();
+    
+    /**
+     * Find tasks without image attachments
+     */
+    @Query("SELECT t FROM Task t WHERE t.imageUrl IS NULL OR t.imageUrl = ''")
+    List<Task> findTasksWithoutImages();
+    
+    /**
+     * Find tasks by mentor that have images
+     */
+    @Query("SELECT t FROM Task t WHERE t.mentorId = :mentorId AND t.imageUrl IS NOT NULL AND t.imageUrl <> ''")
+    List<Task> findTasksWithImagesByMentorId(@Param("mentorId") Long mentorId);
 }

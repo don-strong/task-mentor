@@ -40,6 +40,15 @@ public class Task {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+    
+    @Column(name = "image_file_name", length = 255)
+    private String imageFileName;
+    
+    @Column(name = "image_file_size")
+    private Long imageFileSize;
+    
     // Constructors
     public Task() {
         this.createdAt = LocalDateTime.now();
@@ -116,6 +125,30 @@ public class Task {
     
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    
+    public String getImageUrl() {
+        return imageUrl;
+    }
+    
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+    
+    public String getImageFileName() {
+        return imageFileName;
+    }
+    
+    public void setImageFileName(String imageFileName) {
+        this.imageFileName = imageFileName;
+    }
+    
+    public Long getImageFileSize() {
+        return imageFileSize;
+    }
+    
+    public void setImageFileSize(Long imageFileSize) {
+        this.imageFileSize = imageFileSize;
     }
     
     @PrePersist
