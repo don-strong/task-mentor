@@ -30,8 +30,8 @@ public class MentorService {
      */
     public Mentor createMentor(Mentor mentor) {
         // Validation: Check if mentor profile already exists for this user
-        if (mentorRepository.existsByUserId(mentor.getUserId())) {
-            throw new IllegalArgumentException("Mentor profile already exists for user ID: " + mentor.getUserId());
+        if (mentor.getUser() != null && mentorRepository.existsByUserId(mentor.getUser().getUserId())) {
+            throw new IllegalArgumentException("Mentor profile already exists for user ID: " + mentor.getUser().getUserId());
         }
         
         // Validation: Required fields

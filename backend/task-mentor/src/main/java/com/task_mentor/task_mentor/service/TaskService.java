@@ -1,5 +1,6 @@
 package com.task_mentor.task_mentor.service;
 
+import com.task_mentor.task_mentor.entity.Mentor;
 import com.task_mentor.task_mentor.entity.Task;
 import com.task_mentor.task_mentor.repository.MentorRepository;
 import com.task_mentor.task_mentor.repository.TaskRepository;
@@ -34,11 +35,13 @@ public class TaskService {
      * Create a new task
      * Validates that the mentor exists and task data is valid
      */
-    public Task createTask(Task task) {
-        // Validation: Check if mentor exists
-        if (!mentorRepository.existsById(task.getMentorId())) {
-            throw new IllegalArgumentException("Mentor not found with ID: " + task.getMentorId());
-        }
+    public Task createTask(Long mentorId, Task task) {
+        // Find mentor
+        Mentor mentor = mentorRepository.findById(mentorId)
+                .orElseThrow(() -> new IllegalArgumentException("Mentor not found with ID: " + mentorId));
+        
+        // Set mentor relationship
+        task.setMentor(mentor);
         
         // Validation: Required fields and business rules
         validateTask(task);
@@ -50,11 +53,13 @@ public class TaskService {
      * Create a new task with image attachment
      * Handles file upload and stores file metadata
      */
-    public Task createTaskWithImage(Task task, MultipartFile imageFile) {
-        // Validation: Check if mentor exists
-        if (!mentorRepository.existsById(task.getMentorId())) {
-            throw new IllegalArgumentException("Mentor not found with ID: " + task.getMentorId());
-        }
+    public Task createTaskWithImage(Long mentorId, Task task, MultipartFile imageFile) {
+        // Find mentor
+        Mentor mentor = mentorRepository.findById(mentorId)
+                .orElseThrow(() -> new IllegalArgumentException("Mentor not found with ID: " + mentorId));
+        
+        // Set mentor relationship
+        task.setMentor(mentor);
         
         // Validation: Required fields and business rules
         validateTask(task);
@@ -228,8 +233,8 @@ public class TaskService {
             throw new IllegalArgumentException("Task duration must be between 15 minutes and 8 hours");
         }
         
-        if (task.getMentorId() == null) {
-            throw new IllegalArgumentException("Mentor ID is required");
+        if (task.getMentor() == null) {
+            throw new IllegalArgumentException("Mentor is required");
         }
     }
 }
