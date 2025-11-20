@@ -1,157 +1,242 @@
 package com.task_mentor.task_mentor.service;
 
+import com.task_mentor.task_mentor.dto.StudentStatistics;
+import com.task_mentor.task_mentor.entity.Mentor;
 import com.task_mentor.task_mentor.entity.Student;
+import com.task_mentor.task_mentor.entity.User;
 import com.task_mentor.task_mentor.repository.StudentRepository;
+import com.task_mentor.task_mentor.repository.UserRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
-/**
- * StudentService - Business logic for Student profile management
- * Handles CRUD operations, validation, and business rules for student profiles
- * 
- * @author James No
- */
 @Service
 @Transactional
 public class StudentService {
-    
-    private final StudentRepository studentRepository;
-    
-    public StudentService(StudentRepository studentRepository) {
-        this.studentRepository = studentRepository;
-    }
-    
-    /**
-     * Create a new student profile
-     * Validates that student doesn't already exist for this user
-     */
-    public Student createStudent(Student student) {
-        // Validation: Check if user is provided
-        if (student.getUser() == null || student.getUser().getUserId() == null) {
-            throw new IllegalArgumentException("User is required for student profile");
+
+    @Autowired
+    private StudentRepository studentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    private static final String DEFAULT_STUDENT_IMAGE = "https://api.dicebear.com/7.x/avataaars/svg?seed=default";
+
+    public Student createStudent(Long userId, String name, String bio, String major, Integer graduationYear,
+                                 String careerInterests, String profilePhotoUrl){
+        User user = userRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("User not found"));
+
+        if(!"student".equalsIgnoreCase(user.getAccountType())){
+            throw new IllegalArgumentException("User not a Student");
         }
-        
-        // Validation: Check if student profile already exists for this user
-        if (studentRepository.existsByUserId(student.getUser().getUserId())) {
-            throw new IllegalArgumentException("Student profile already exists for user ID: " + student.getUser().getUserId());
+
+        if(studentRepository.existsByUserId(userId)){
+            throw new IllegalArgumentException("User is already a Student");
         }
-        
-        // Validation: Required fields
-        validateStudent(student);
-        
+
+        validateStudentData(name,major,graduationYear);
+
+        if(profilePhotoUrl != null && !profilePhotoUrl.trim().isEmpty()) {
+            validateProfilePhotoUrl(profilePhotoUrl);
+        }
+
+        Student student = new Student();
+        student.setUser(user);
+        student.setName(name.trim());
+        student.setBio(bio != null ? bio.trim() : null);
+        student.setMajor(major != null ? major.trim() : null);
+        student.setGraduationYear(graduationYear);
+        student.setCareerInterests(careerInterests != null ? careerInterests.trim() : null);
+        if(profilePhotoUrl != null && !profilePhotoUrl.trim().isEmpty()) {
+            student.setProfilePhotoUrl(profilePhotoUrl);
+        }else{
+            student.setProfilePhotoUrl(DEFAULT_STUDENT_IMAGE);
+        }
+
         return studentRepository.save(student);
+
     }
-    
-    /**
-     * Get student by student ID
-     */
-    public Optional<Student> getStudentById(Long studentId) {
-        return studentRepository.findById(studentId);
+
+    public Student updateStudentProfile(Long userId, String name, String bio, String major, Integer graduationYear,
+                                      String careerInterests, String profilePhotoUrl){
+        // Fixed: changed from findById to findByUserId to match parameter name,
+        // fixes error 400  BAD REQUEST bug when updating profiles
+        Student student = studentRepository.findByUserId(userId).orElseThrow(()->
+                new IllegalArgumentException("Student not found"));
+
+        if(name != null && !name.trim().isEmpty()){
+            validateName(name);
+            student.setName(name.trim());
+        }
+
+        if(bio != null){
+            student.setBio(bio.trim().isEmpty() ? null : bio.trim());
+        }
+
+        if(graduationYear != null){
+            validateGraduationYear(graduationYear);
+            student.setGraduationYear(graduationYear);
+        }
+
+        if(careerInterests != null){
+            student.setCareerInterests(careerInterests.trim().isEmpty() ? null : careerInterests.trim());
+        }
+
+        if(profilePhotoUrl != null){
+            if(!profilePhotoUrl.trim().isEmpty()){
+                validateProfilePhotoUrl(profilePhotoUrl);
+                student.setProfilePhotoUrl(profilePhotoUrl.trim());
+            }else{
+                student.setProfilePhotoUrl(DEFAULT_STUDENT_IMAGE);
+            }
+        }
+
+        return studentRepository.save(student);
+
     }
-    
-    /**
-     * Get student profile by user ID
-     * Used when a logged-in user wants to view/edit their student profile
-     */
-    public Optional<Student> getStudentByUserId(Long userId) {
-        return studentRepository.findByUserId(userId);
+
+    public Student getStudentById(Long studentId) {
+        return studentRepository.findById(studentId).orElseThrow(()->
+                new IllegalArgumentException("Student with that id not found"));
     }
-    
-    /**
-     * Get all students
-     */
+
+    public Student getStudentByUserId(Long userId) {
+        return studentRepository.findByUserId(userId).orElseThrow(()->
+                new IllegalArgumentException("Student with that userId not found"));
+    }
+
     public List<Student> getAllStudents() {
         return studentRepository.findAll();
     }
-    
-    /**
-     * Update student profile
-     */
-    public Student updateStudent(Long studentId, Student updatedStudent) {
-        Student existing = studentRepository.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Student not found with ID: " + studentId));
-        
-        // Validation: Required fields
-        validateStudent(updatedStudent);
-        
-        // Update fields
-        existing.setName(updatedStudent.getName());
-        existing.setBio(updatedStudent.getBio());
-        existing.setMajor(updatedStudent.getMajor());
-        existing.setGraduationYear(updatedStudent.getGraduationYear());
-        existing.setCareerInterests(updatedStudent.getCareerInterests());
-        existing.setProfilePhotoUrl(updatedStudent.getProfilePhotoUrl());
-        
-        return studentRepository.save(existing);
-    }
-    
-    /**
-     * Delete student profile
-     */
-    public void deleteStudent(Long studentId) {
-        if (!studentRepository.existsById(studentId)) {
-            throw new IllegalArgumentException("Student not found with ID: " + studentId);
+
+    public void deleteStudentProfile(Long studentId){
+        if(!studentRepository.existsById(studentId)){
+            throw new IllegalArgumentException("Student with that id not found");
         }
         studentRepository.deleteById(studentId);
     }
-    
-    /**
-     * Search students by major
-     */
-    public List<Student> getStudentsByMajor(String major) {
-        return studentRepository.findByMajor(major);
+
+    public boolean StudentProfileExists(Long studentId){
+        return studentRepository.existsById(studentId);
     }
-    
-    /**
-     * Search students by graduation year
-     */
-    public List<Student> getStudentsByGraduationYear(Integer year) {
-        return studentRepository.findByGraduationYear(year);
-    }
-    
-    /**
-     * Search students by name (partial match, case-insensitive)
-     */
-    public List<Student> searchStudentsByName(String name) {
+
+    public List<Student> searchStudentByName(String name){
+        if (name == null || name.trim().isEmpty()){
+            throw new IllegalArgumentException("Student name cannot be empty");
+        }
         return studentRepository.findByNameContainingIgnoreCase(name);
     }
-    
-    /**
-     * Search students by career interest
-     */
-    public List<Student> getStudentsByCareerInterest(String interest) {
-        return studentRepository.findByCareerInterest(interest);
+
+    public List<Student> searchStudentByMajor(String major){
+        if (major == null || major.trim().isEmpty()){
+            throw new IllegalArgumentException("Student major cannot be empty");
+        }
+        return studentRepository.findByMajor(major);
     }
-    
-    /**
-     * Get current students (graduating in current year or later)
-     */
-    public List<Student> getCurrentStudents(Integer currentYear) {
-        return studentRepository.findByGraduationYearGreaterThanEqual(currentYear);
+
+    public List<Student> searchStudentByGraduationYear(Integer graduationYear){
+        validateGraduationYear(graduationYear);
+        return studentRepository.findByGraduationYear(graduationYear);
     }
-    
-    /**
-     * Validate student data
-     * Business rules for student profiles
-     */
-    private void validateStudent(Student student) {
-        if (student.getName() == null || student.getName().trim().isEmpty()) {
+
+    public List<Student> searchStudentByCareerInterests(String careerInterests){
+        if (careerInterests == null || careerInterests.trim().isEmpty()){
+            throw new IllegalArgumentException("Student career interests cannot be empty");
+        }
+        return studentRepository.findByCareerInterest(careerInterests);
+    }
+
+    public StudentStatistics getStudentStatistics(Long studentId) {
+        Student student = getStudentById(studentId);
+
+        StudentStatistics stats = new StudentStatistics();
+        stats.setStudentId(student.getStudentId());
+        stats.setName(student.getName());
+        stats.setBio(student.getBio());
+        stats.setMajor(student.getMajor());
+        stats.setGraduationYear(student.getGraduationYear());
+        stats.setCareerInterests(student.getCareerInterests());
+        stats.setProfilePhotoUrl(student.getProfilePhotoUrl());
+
+        return stats;
+    }
+
+    public List<StudentStatistics> getAllStudentStatistics() {
+        List<Student> students = getAllStudents();
+
+        return students.stream()
+                .map(student -> {
+                    StudentStatistics stats = new StudentStatistics();
+                    stats.setStudentId(student.getStudentId());
+                    stats.setName(student.getName());
+                    stats.setBio(student.getBio());
+                    stats.setMajor(student.getMajor());
+                    stats.setGraduationYear(student.getGraduationYear());
+                    stats.setCareerInterests(student.getCareerInterests());
+                    stats.setProfilePhotoUrl(student.getProfilePhotoUrl());
+                    return stats;
+                })
+                .toList();
+    }
+
+
+    private void validateStudentData(String name, String major, Integer graduationYear) {
+        validateName(name);
+        validateMajor(major);
+        validateGraduationYear(graduationYear);
+    }
+
+    private void validateName(String name) {
+        if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Student name is required");
         }
-        
-        if (student.getUser() == null || student.getUser().getUserId() == null) {
-            throw new IllegalArgumentException("User is required");
+        if (name.trim().length() < 2) {
+            throw new IllegalArgumentException("Student name must be at least 2 characters long");
         }
-        
-        // Optional: Validate graduation year is reasonable
-        if (student.getGraduationYear() != null) {
-            int currentYear = java.time.Year.now().getValue();
-            if (student.getGraduationYear() < currentYear - 10 || student.getGraduationYear() > currentYear + 10) {
-                throw new IllegalArgumentException("Graduation year must be within 10 years of current year");
-            }
+        if (name.length() > 150) {
+            throw new IllegalArgumentException("Student name must not exceed 150 characters");
         }
     }
+
+    private void validateMajor(String major){
+        if (major == null || major.trim().isEmpty()){
+            throw new IllegalArgumentException("Student major is required");
+        }
+        if(major.length() > 100){
+            throw new IllegalArgumentException("Student major must be less than 100 characters");
+        }
+    }
+
+    private void validateGraduationYear(Integer year) {
+        if (year == null) {
+            throw new IllegalArgumentException("Graduation year is required");
+        }
+        int currentYear = LocalDateTime.now().getYear();
+        if (year < currentYear - 10) {
+            throw new IllegalArgumentException(
+                    "Graduation year cannot be more than 10 years in the past (before " + (currentYear - 10) + ")");
+        }
+        if (year > currentYear + 10) {
+            throw new IllegalArgumentException(
+                    "Graduation year cannot be more than 10 years in the future (after " + (currentYear + 10) + ")");
+        }
+    }
+
+    private void validateProfilePhotoUrl(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            return; // URL is optional
+        }
+        if (url.length() > 500) {
+            throw new IllegalArgumentException("Profile photo URL must not exceed 500 characters");
+        }
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            throw new IllegalArgumentException("Profile photo URL must be a valid HTTP or HTTPS URL");
+        }
+    }
+
+
+
 }
