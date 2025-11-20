@@ -23,7 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     Optional<User> findByEmail(String email);
 
-
+    Optional<User> findById(Long userId);
 
     /**
      * Find all users by account type (student or mentor)
