@@ -62,20 +62,19 @@ public class SearchController {
     @GetMapping("/students")
     public ResponseEntity<Map<String, Object>> searchStudents(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String bio,
             @RequestParam(required = false) String major,
-            @RequestParam(required = false) String careerInterests,
             @RequestParam(required = false) Integer graduationYear,
-            @RequestParam(required = false) Integer minGraduationYear){
+            @RequestParam(required = false) Integer minGraduationYear,
+            @RequestParam(required = false) String careerInterests){
 
         List<Student> students = searchService.searchStudents(
-                name,bio,major, careerInterests, graduationYear, minGraduationYear);
+                name,major, graduationYear, minGraduationYear, careerInterests);
 
         Map<String, Object> Response = new HashMap<>();
         Response.put("students", students);
         Response.put("count", students.size());
-        Response.put("filters", buildStudentsFiltersMap(name, bio, major, careerInterests, graduationYear,
-                minGraduationYear));
+        Response.put("filters", buildStudentFiltersMap(name,  major,  graduationYear,
+                minGraduationYear, careerInterests));
 
         return ResponseEntity.ok(Response);
 
@@ -88,7 +87,7 @@ public class SearchController {
             @RequestParam(required = false) String taskCategory,
             @RequestParam(required = false) Integer maxDuration
     ){
-        List<Mentor> mentors = searchService.mentorsWithTasks(
+        List<Mentor> mentors = searchService.searchMentorsWithTasks(
                 mentorName,expertise,taskCategory, maxDuration
         );
 
@@ -103,7 +102,7 @@ public class SearchController {
 
     @GetMapping("/categories")
     public ResponseEntity<Map<String, Object>> getAllCategories(){
-        List<Task> tasks = searchService.getAllTaskCategories();
+        List<String> tasks = searchService.getAllCategories();
 
         Map<String, Object> response = new HashMap<>();
         response.put("tasks", tasks);
