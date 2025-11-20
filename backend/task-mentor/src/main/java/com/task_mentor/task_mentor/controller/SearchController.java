@@ -1,6 +1,8 @@
 package com.task_mentor.task_mentor.controller;
 
 
+import com.task_mentor.task_mentor.dto.MentorSearchDTO;
+import com.task_mentor.task_mentor.dto.TaskSearchDTO;
 import com.task_mentor.task_mentor.entity.Mentor;
 import com.task_mentor.task_mentor.entity.Student;
 import com.task_mentor.task_mentor.entity.Task;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/search")
@@ -20,24 +23,27 @@ public class SearchController {
     private SearchService searchService;
 
     @GetMapping("/mentors")
-    public ResponseEntity<Map<String,Object>> searchMentors(
+    public ResponseEntity<Map<String, Object>> searchMentors(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String company,
             @RequestParam(required = false) String industry,
             @RequestParam(required = false) String expertise,
             @RequestParam(required = false) Integer minYearsExperience) {
 
-            List<Mentor> mentors = searchService.searchMentors(
+        List<Mentor> mentors = searchService.searchMentors(
                 name, company, industry, expertise, minYearsExperience);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("mentors", mentors);
-            response.put("count", mentors.size());
-            response.put("filters", buildMentorsFiltersMap(name,company,industry,expertise, minYearsExperience));
+        // Convert entities to DTOs to avoid circular references and control exposed data
+        List<MentorSearchDTO> mentorDTOs = mentors.stream()
+                .map(this::convertMentorToDTO)
+                .collect(Collectors.toList());
 
+        Map<String, Object> response = new HashMap<>();
+        response.put("mentors", mentorDTOs);
+        response.put("count", mentorDTOs.size());
+        response.put("filters", buildMentorsFiltersMap(name, company, industry, expertise, minYearsExperience));
 
         return ResponseEntity.ok(response);
-
     }
 
     @GetMapping("/tasks")
@@ -46,17 +52,22 @@ public class SearchController {
             @RequestParam(required = false) String category,
             @RequestParam(required = false) Long mentorId,
             @RequestParam(required = false) Integer minDuration,
-            @RequestParam(required = false) Integer maxDuration){
+            @RequestParam(required = false) Integer maxDuration) {
+
         List<Task> tasks = searchService.searchTasks(
-                title,category,mentorId,minDuration,maxDuration);
+                title, category, mentorId, minDuration, maxDuration);
+
+        // Convert entities to DTOs
+        List<TaskSearchDTO> taskDTOs = tasks.stream()
+                .map(this::convertTaskToDTO)
+                .collect(Collectors.toList());
 
         Map<String, Object> response = new HashMap<>();
-        response.put("tasks", tasks);
-        response.put("count", tasks.size());
-        response.put("filters", buildTaskFiltersMap(title,category,mentorId,minDuration,maxDuration));
+        response.put("tasks", taskDTOs);
+        response.put("count", taskDTOs.size());
+        response.put("filters", buildTaskFiltersMap(title, category, mentorId, minDuration, maxDuration));
 
         return ResponseEntity.ok(response);
-
     }
 
     @GetMapping("/students")
@@ -83,23 +94,25 @@ public class SearchController {
     @GetMapping("/mentors-with-tasks")
     public ResponseEntity<Map<String, Object>> searchMentorsWithTasks(
             @RequestParam(required = false) String mentorName,
-            @RequestParam(required = false ) String expertise,
+            @RequestParam(required = false) String expertise,
             @RequestParam(required = false) String taskCategory,
-            @RequestParam(required = false) Integer maxDuration
-    ){
+            @RequestParam(required = false) Integer maxDuration) {
+
         List<Mentor> mentors = searchService.searchMentorsWithTasks(
-                mentorName,expertise,taskCategory, maxDuration
-        );
+                mentorName, expertise, taskCategory, maxDuration);
 
-        Map<String, Object> Response = new HashMap<>();
-        Response.put("mentors", mentors);
-        Response.put("count", mentors.size());
-        Response.put("filters", buildMentorsWIthTasksFilterMap(mentorName, expertise, taskCategory, maxDuration));
+        // Convert entities to DTOs
+        List<MentorSearchDTO> mentorDTOs = mentors.stream()
+                .map(this::convertMentorToDTO)
+                .collect(Collectors.toList());
 
-        return ResponseEntity.ok(Response);
+        Map<String, Object> response = new HashMap<>();
+        response.put("mentors", mentorDTOs);
+        response.put("count", mentorDTOs.size());
+        response.put("filters", buildMentorsWIthTasksFilterMap(mentorName, expertise, taskCategory, maxDuration));
 
+        return ResponseEntity.ok(response);
     }
-
     @GetMapping("/categories")
     public ResponseEntity<Map<String, Object>> getAllCategories(){
         List<String> tasks = searchService.getAllCategories();
@@ -192,6 +205,47 @@ public class SearchController {
         if(maxDuration != null) filters.put("maxDuration", maxDuration);
         return filters;
     }
+
+    private MentorSearchDTO convertMentorToDTO(Mentor mentor) {
+        MentorSearchDTO dto = new MentorSearchDTO();
+        dto.setMentorId(mentor.getMentorId());
+        dto.setName(mentor.getName());
+        dto.setBio(mentor.getBio());
+        dto.setRoleTitle(mentor.getRoleTitle());
+        dto.setCompany(mentor.getCompany());
+        dto.setYearsExperience(mentor.getYearsExperience());
+        dto.setIndustries(mentor.getIndustries());
+        dto.setExpertiseAreas(mentor.getExpertiseAreas());
+        dto.setProfilePhotoUrl(mentor.getProfilePhotoUrl());
+
+        // Optionally include task count
+        if (mentor.getTasks() != null) {
+            dto.setTaskCount(mentor.getTasks().size());
+        }
+
+        return dto;
+    }
+
+    private TaskSearchDTO convertTaskToDTO(Task task) {
+        TaskSearchDTO dto = new TaskSearchDTO();
+        dto.setTaskId(task.getTaskId());
+
+        // Safely get mentor info
+        if (task.getMentor() != null) {
+            dto.setMentorId(task.getMentor().getMentorId());
+            dto.setMentorName(task.getMentor().getName());
+        }
+
+        dto.setTitle(task.getTitle());
+        dto.setDescription(task.getDescription());
+        dto.setDurationMinutes(task.getDurationMinutes());
+        dto.setCategory(task.getCategory());
+
+        return dto;
+    }
+
+
+
 
 
 
