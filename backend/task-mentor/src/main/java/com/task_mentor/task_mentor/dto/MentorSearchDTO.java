@@ -13,12 +13,13 @@ public class MentorSearchDTO {
     private String profilePhotoUrl;
     private Integer taskCount;
 
-    // Constructors
+
     public MentorSearchDTO() {}
+
 
     public MentorSearchDTO(Long mentorId, String name, String bio, String roleTitle,
                            String company, Integer yearsExperience, String industries,
-                           String expertiseAreas, String profilePhotoUrl) {
+                           String expertiseAreas, String profilePhotoUrl, Integer taskCount) {
         this.mentorId = mentorId;
         this.name = name;
         this.bio = bio;
@@ -28,6 +29,7 @@ public class MentorSearchDTO {
         this.industries = industries;
         this.expertiseAreas = expertiseAreas;
         this.profilePhotoUrl = profilePhotoUrl;
+        this.taskCount = taskCount;
     }
 
 
@@ -109,5 +111,17 @@ public class MentorSearchDTO {
 
     public void setTaskCount(Integer taskCount) {
         this.taskCount = taskCount;
+    }
+
+    @Override
+    public String toString() {
+        return "MentorSearchDTO{" +
+                "mentorId=" + mentorId +
+                ", name='" + name + '\'' +
+                ", roleTitle='" + roleTitle + '\'' +
+                ", company='" + company + '\'' +
+                ", yearsExperience=" + yearsExperience +
+                ", taskCount=" + taskCount +
+                '}';
     }
 }

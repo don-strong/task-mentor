@@ -120,7 +120,6 @@ public class SearchController {
         Map<String, Object> response = new HashMap<>();
         response.put("tasks", tasks);
         response.put("count", tasks.size());
-
         return ResponseEntity.ok(response);
     }
 
@@ -218,7 +217,7 @@ public class SearchController {
         dto.setExpertiseAreas(mentor.getExpertiseAreas());
         dto.setProfilePhotoUrl(mentor.getProfilePhotoUrl());
 
-        // Optionally include task count
+
         if (mentor.getTasks() != null) {
             dto.setTaskCount(mentor.getTasks().size());
         }
@@ -230,7 +229,7 @@ public class SearchController {
         TaskSearchDTO dto = new TaskSearchDTO();
         dto.setTaskId(task.getTaskId());
 
-        // Safely get mentor info
+
         if (task.getMentor() != null) {
             dto.setMentorId(task.getMentor().getMentorId());
             dto.setMentorName(task.getMentor().getName());
@@ -243,10 +242,6 @@ public class SearchController {
 
         return dto;
     }
-
-
-
-
 
 
 

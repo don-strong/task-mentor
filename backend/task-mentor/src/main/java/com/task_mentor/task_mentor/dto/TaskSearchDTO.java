@@ -10,7 +10,7 @@ public class TaskSearchDTO {
     private Integer durationMinutes;
     private String category;
 
-
+    // Constructors
     public TaskSearchDTO() {}
 
     public TaskSearchDTO(Long taskId, Long mentorId, String mentorName, String title,
@@ -24,7 +24,7 @@ public class TaskSearchDTO {
         this.category = category;
     }
 
-
+    // Getters and Setters
     public Long getTaskId() {
         return taskId;
     }
@@ -79,5 +79,17 @@ public class TaskSearchDTO {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    @Override
+    public String toString() {
+        return "TaskSearchDTO{" +
+                "taskId=" + taskId +
+                ", mentorId=" + mentorId +
+                ", mentorName='" + mentorName + '\'' +
+                ", title='" + title + '\'' +
+                ", durationMinutes=" + durationMinutes +
+                ", category='" + category + '\'' +
+                '}';
     }
 }

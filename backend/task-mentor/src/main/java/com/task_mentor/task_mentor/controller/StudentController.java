@@ -2,7 +2,7 @@ package com.task_mentor.task_mentor.controller;
 
 import com.task_mentor.task_mentor.dto.CreateStudentRequest;
 import com.task_mentor.task_mentor.dto.StudentStatistics;
-import com.task_mentor.task_mentor.dto.UpdateStudentRequest;
+import com.task_mentor.task_mentor.dto.StudentRequest;
 import com.task_mentor.task_mentor.entity.Student;
 import com.task_mentor.task_mentor.entity.User;
 import com.task_mentor.task_mentor.repository.UserRepository;
@@ -139,7 +139,7 @@ public class StudentController {
      */
     @PutMapping("/me")
     public ResponseEntity<?> updateMyProfile(
-            @RequestBody UpdateStudentRequest request,
+            @RequestBody StudentRequest request,
             Authentication authentication) {
 
         try {

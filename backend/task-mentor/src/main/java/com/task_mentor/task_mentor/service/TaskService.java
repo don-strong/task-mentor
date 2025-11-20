@@ -1,6 +1,5 @@
 package com.task_mentor.task_mentor.service;
 
-import com.task_mentor.task_mentor.dto.TaskStatistics;
 import com.task_mentor.task_mentor.entity.Mentor;
 import com.task_mentor.task_mentor.entity.Task;
 import com.task_mentor.task_mentor.repository.MentorRepository;
@@ -207,10 +206,10 @@ public class TaskService {
 
 
 
-    public TaskStatistics getTaskStatistics(Long taskId) {
+    public TaskSearchDTO getTaskStatistics(Long taskId) {
         Task task = getTaskById(taskId);
 
-        TaskStatistics stats = new TaskStatistics();
+        TaskSearchDTO stats = new TaskSearchDTO();
         stats.setTaskId(task.getTaskId());
         stats.setMentorId(task.getMentor().getMentorId());
         stats.setMentorName(task.getMentor().getName());
@@ -223,12 +222,12 @@ public class TaskService {
     }
 
 
-    public List<TaskStatistics> getAllTaskStatistics() {
+    public List<TaskSearchDTO> getAllTaskStatistics() {
         List<Task> tasks = getAllTasks();
 
         return tasks.stream()
                 .map(task -> {
-                    TaskStatistics stats = new TaskStatistics();
+                    TaskSearchDTO stats = new TaskSearchDTO();
                     stats.setTaskId(task.getTaskId());
                     stats.setMentorId(task.getMentor().getMentorId());
                     stats.setMentorName(task.getMentor().getName());
@@ -242,12 +241,12 @@ public class TaskService {
     }
 
 
-    public List<TaskStatistics> getTaskStatisticsByMentor(Long mentorId) {
+    public List<TaskSearchDTO> getTaskStatisticsByMentor(Long mentorId) {
         List<Task> tasks = getTasksByMentor(mentorId);
 
         return tasks.stream()
                 .map(task -> {
-                    TaskStatistics stats = new TaskStatistics();
+                    TaskSearchDTO stats = new TaskSearchDTO();
                     stats.setTaskId(task.getTaskId());
                     stats.setMentorId(task.getMentor().getMentorId());
                     stats.setMentorName(task.getMentor().getName());
