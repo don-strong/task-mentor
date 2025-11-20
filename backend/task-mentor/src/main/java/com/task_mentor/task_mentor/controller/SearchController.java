@@ -161,8 +161,8 @@ public class SearchController {
 
     }
 
-    private Map<String, Object> buildTaskFiltersMap(String title, String category, Long mentorId, String minDuration,
-                                                    String maxDuration){
+    private Map<String, Object> buildTaskFiltersMap(String title, String category, Long mentorId, Integer minDuration,
+                                                    Integer maxDuration){
         Map<String, Object> filters = new HashMap<>();
         if(title != null) filters.put("title", title);
         if(category != null) filters.put("category", category);
@@ -173,15 +173,14 @@ public class SearchController {
         return filters;
     }
 
-    private Map<String, Object> buildStudentsFiltersMap(String name, String major, String careerInterests,
-                                                        Integer graduationYear, Integer minGraduationYear){
+    private Map<String, Object> buildStudentFiltersMap(String name, String major, Integer graduationYear,
+                                                       Integer minGraduationYear, String careerInterest) {
         Map<String, Object> filters = new HashMap<>();
-        if(name != null) filters.put("name", name);
-        if(major != null) filters.put("major", major);
-        if(careerInterests != null) filters.put("careerInterests", careerInterests);
-        if(graduationYear != null) filters.put("graduationYear", graduationYear);
-        if(minGraduationYear != null) filters.put("minGraduationYear", minGraduationYear);
-
+        if (name != null) filters.put("name", name);
+        if (major != null) filters.put("major", major);
+        if (graduationYear != null) filters.put("graduationYear", graduationYear);
+        if (minGraduationYear != null) filters.put("minGraduationYear", minGraduationYear);
+        if (careerInterest != null) filters.put("careerInterest", careerInterest);
         return filters;
     }
 
