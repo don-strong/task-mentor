@@ -1,5 +1,6 @@
 package com.task_mentor.task_mentor.service;
 
+import com.task_mentor.task_mentor.dto.TaskStatistics;
 import com.task_mentor.task_mentor.entity.Mentor;
 import com.task_mentor.task_mentor.entity.Task;
 import com.task_mentor.task_mentor.repository.MentorRepository;
@@ -209,6 +210,78 @@ public class TaskService {
      */
     public long countTasksByMentor(Long mentorId) {
         return taskRepository.countByMentorId(mentorId);
+    }
+    
+    /**
+     * Get task statistics for a single task
+     * Returns TaskStatistics DTO with task details
+     */
+    public TaskStatistics getTaskStatistics(Long taskId) {
+        Task task = getTaskById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+        
+        TaskStatistics stats = new TaskStatistics();
+        stats.setTaskId(task.getTaskId());
+        stats.setMentorId(task.getMentor().getMentorId());
+        stats.setMentorName(task.getMentor().getName());
+        stats.setTitle(task.getTitle());
+        stats.setDescription(task.getDescription());
+        stats.setDurationMinutes(task.getDurationMinutes());
+        stats.setCategory(task.getCategory());
+        
+        return stats;
+    }
+    
+    /**
+     * Get statistics for all tasks
+     * Used for analytics and reporting
+     */
+    public List<TaskStatistics> getAllTaskStatistics() {
+        List<Task> tasks = getAllTasks();
+        
+        return tasks.stream()
+                .map(task -> {
+                    TaskStatistics stats = new TaskStatistics();
+                    stats.setTaskId(task.getTaskId());
+                    stats.setMentorId(task.getMentor().getMentorId());
+                    stats.setMentorName(task.getMentor().getName());
+                    stats.setTitle(task.getTitle());
+                    stats.setDescription(task.getDescription());
+                    stats.setDurationMinutes(task.getDurationMinutes());
+                    stats.setCategory(task.getCategory());
+                    return stats;
+                })
+                .toList();
+    }
+    
+    /**
+     * Get statistics for all tasks by a specific mentor
+     * Used for mentor dashboard and analytics
+     */
+    public List<TaskStatistics> getTaskStatisticsByMentor(Long mentorId) {
+        List<Task> tasks = getTasksByMentorId(mentorId);
+        
+        return tasks.stream()
+                .map(task -> {
+                    TaskStatistics stats = new TaskStatistics();
+                    stats.setTaskId(task.getTaskId());
+                    stats.setMentorId(task.getMentor().getMentorId());
+                    stats.setMentorName(task.getMentor().getName());
+                    stats.setTitle(task.getTitle());
+                    stats.setDescription(task.getDescription());
+                    stats.setDurationMinutes(task.getDurationMinutes());
+                    stats.setCategory(task.getCategory());
+                    return stats;
+                })
+                .toList();
+    }
+    
+    /**
+     * Check if a task exists
+     * Helper method for validation
+     */
+    public boolean doesTaskExist(Long taskId) {
+        return taskRepository.existsById(taskId);
     }
     
     /**
