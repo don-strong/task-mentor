@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
  * Booking Entity - Stores session booking requests and confirmations
  * Corresponds to the 'bookings' table in PostgreSQL
  *
+ *
  * @author James No
  */
 @Entity
@@ -59,7 +60,7 @@ public class Booking {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
+
     public Long getBookingId() {
         return bookingId;
     }
@@ -72,23 +73,23 @@ public class Booking {
         return student;
     }
 
-    public void setStudentId(Student student) {
+    public void setStudent(Student student) {
         this.student = student;
     }
 
-    public Mentor getMentorId() {
+    public Mentor getMentor() {
         return mentor;
     }
 
-    public void setMentorId(Mentor mentor) {
+    public void setMentor(Mentor mentor) {
         this.mentor = mentor;
     }
 
-    public Task getTaskId() {
+    public Task getTask() {
         return task;
     }
 
-    public void setTaskId(Task task) {
+    public void setTask(Task task) {
         this.task = task;
     }
 
@@ -127,8 +128,7 @@ public class Booking {
 
     @PrePersist
     protected void onCreate() {
-            createdAt = LocalDateTime.now();
-
+        createdAt = LocalDateTime.now();
     }
 
     @PreUpdate
@@ -140,9 +140,9 @@ public class Booking {
     public String toString() {
         return "Booking{" +
                 "bookingId=" + bookingId +
-                ", studentId=" + student +
-                ", mentorId=" + mentor +
-                ", taskId=" + task +
+                ", student=" + (student != null ? student.getStudentId() : null) +
+                ", mentor=" + (mentor != null ? mentor.getMentorId() : null) +
+                ", task=" + (task != null ? task.getTaskId() : null) +
                 ", proposedDatetime=" + proposedDatetime +
                 ", status='" + status + '\'' +
                 ", createdAt=" + createdAt +

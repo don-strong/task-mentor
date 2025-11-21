@@ -7,6 +7,7 @@ import com.task_mentor.task_mentor.repository.TaskRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.task_mentor.task_mentor.dto.TaskSearchDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
