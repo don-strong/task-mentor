@@ -1,6 +1,5 @@
 package com.task_mentor.task_mentor.service;
 
-import com.task_mentor.task_mentor.dto.MentorStatistics;
 import com.task_mentor.task_mentor.entity.Mentor;
 import com.task_mentor.task_mentor.entity.User;
 import com.task_mentor.task_mentor.repository.MentorRepository;
@@ -8,6 +7,7 @@ import com.task_mentor.task_mentor.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.task_mentor.task_mentor.dto.MentorSearchDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,8 +18,6 @@ public class MentorService {
 
     @Autowired
     private MentorRepository mentorRepository;
-
-
 
     @Autowired
     private UserRepository userRepository;
@@ -146,7 +144,7 @@ public class MentorService {
             if(profilePhotoUrl.trim().isEmpty()){
                 validateProfilePhotoUrl(profilePhotoUrl);
                 mentor.setProfilePhotoUrl(profilePhotoUrl.trim());
-                } else {
+            } else {
                 mentor.setProfilePhotoUrl(DEFAULT_MENTOR_IMAGE);
             }
         }
@@ -195,10 +193,10 @@ public class MentorService {
         return mentorRepository.findByExpertise(expertiseAreas.trim());
     }
 
-    public MentorStatistics getMentorStatistics(Long mentorId) {
+    public MentorSearchDTO getMentorStatistics(Long mentorId) {
         Mentor mentor = getMentorById(mentorId);
 
-        MentorStatistics stats = new MentorStatistics();
+        MentorSearchDTO stats = new MentorSearchDTO();
         stats.setMentorId(mentor.getMentorId());
         stats.setName(mentor.getName());
         stats.setBio(mentor.getBio());
@@ -212,12 +210,12 @@ public class MentorService {
         return stats;
     }
 
-    public List<MentorStatistics> getAllMentorStatistics() {
+    public List<MentorSearchDTO> getAllMentorStatistics() {
         List<Mentor> mentors = getAllMentors();
 
         return mentors.stream()
                 .map(mentor -> {
-                    MentorStatistics stats = new MentorStatistics();
+                    MentorSearchDTO stats = new MentorSearchDTO();
                     stats.setMentorId(mentor.getMentorId());
                     stats.setName(mentor.getName());
                     stats.setBio(mentor.getBio());
@@ -272,7 +270,4 @@ public class MentorService {
             throw new IllegalArgumentException("Profile photo url must be a valid HTTTP or HTTPS URL");
         }
     }
-
-
-
 }

@@ -1,6 +1,7 @@
 package com.task_mentor.task_mentor.dto;
 
-public class TaskStatistics {
+public class TaskSearchDTO {
+
     private Long taskId;
     private Long mentorId;
     private String mentorName;
@@ -9,11 +10,11 @@ public class TaskStatistics {
     private Integer durationMinutes;
     private String category;
 
+    // Constructors
+    public TaskSearchDTO() {}
 
-    public TaskStatistics() {}
-
-    public TaskStatistics(Long taskId, Long mentorId, String mentorName, String title,
-                          String description, Integer durationMinutes, String category) {
+    public TaskSearchDTO(Long taskId, Long mentorId, String mentorName, String title,
+                         String description, Integer durationMinutes, String category) {
         this.taskId = taskId;
         this.mentorId = mentorId;
         this.mentorName = mentorName;
@@ -23,7 +24,7 @@ public class TaskStatistics {
         this.category = category;
     }
 
-
+    // Getters and Setters
     public Long getTaskId() {
         return taskId;
     }
@@ -82,7 +83,7 @@ public class TaskStatistics {
 
     @Override
     public String toString() {
-        return "TaskStatistics{" +
+        return "TaskSearchDTO{" +
                 "taskId=" + taskId +
                 ", mentorId=" + mentorId +
                 ", mentorName='" + mentorName + '\'' +

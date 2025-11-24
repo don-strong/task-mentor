@@ -1,7 +1,7 @@
 package com.task_mentor.task_mentor.dto;
 
-public class MentorStatistics {
-    private Long mentorId;
+public class MentorCreateRequest {
+    private Long userId;
     private String name;
     private String bio;
     private String roleTitle;
@@ -12,12 +12,13 @@ public class MentorStatistics {
     private String profilePhotoUrl;
 
 
-    public MentorStatistics() {}
+    public MentorCreateRequest() {}
 
-    public MentorStatistics(Long mentorId, String name, String bio, String roleTitle,
-                            String company, Integer yearsExperience, String industries,
-                            String expertiseAreas, String profilePhotoUrl) {
-        this.mentorId = mentorId;
+
+    public MentorCreateRequest(Long userId, String name, String bio, String roleTitle,
+                               String company, Integer yearsExperience, String industries,
+                               String expertiseAreas, String profilePhotoUrl) {
+        this.userId = userId;
         this.name = name;
         this.bio = bio;
         this.roleTitle = roleTitle;
@@ -28,13 +29,13 @@ public class MentorStatistics {
         this.profilePhotoUrl = profilePhotoUrl;
     }
 
-
-    public Long getMentorId() {
-        return mentorId;
+    // Getters and Setters
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setMentorId(Long mentorId) {
-        this.mentorId = mentorId;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getName() {
@@ -99,16 +100,5 @@ public class MentorStatistics {
 
     public void setProfilePhotoUrl(String profilePhotoUrl) {
         this.profilePhotoUrl = profilePhotoUrl;
-    }
-
-    @Override
-    public String toString() {
-        return "MentorStatistics{" +
-                "mentorId=" + mentorId +
-                ", name='" + name + '\'' +
-                ", roleTitle='" + roleTitle + '\'' +
-                ", company='" + company + '\'' +
-                ", yearsExperience=" + yearsExperience +
-                '}';
     }
 }
