@@ -65,7 +65,7 @@ function PublicMentorProfile() {
         <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row gap-6">
             {/* Profile Image Placeholder */}
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="h-32 w-32 rounded-full bg-indigo-200 flex items-center justify-center text-4xl text-indigo-700 font-bold">
                 {mentor.firstName[0]}
                 {mentor.lastName[0]}
