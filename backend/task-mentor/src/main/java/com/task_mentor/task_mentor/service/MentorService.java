@@ -161,7 +161,7 @@ public class MentorService {
         return mentorRepository.findAll();
     }
 
-    public void deleteMenotorProfile(Long mentorId) {
+    public void deleteMentorProfile(Long mentorId) {
         if(!mentorRepository.existsById(mentorId)){
             throw new IllegalArgumentException("Mentor with that id not found");
         }

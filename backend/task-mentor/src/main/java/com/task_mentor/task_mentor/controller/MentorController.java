@@ -89,7 +89,7 @@ public class MentorController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteMentor(@PathVariable Long id) {
         try {
-            mentorService.deleteMenotorProfile(id);
+            mentorService.deleteMentorProfile(id);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
