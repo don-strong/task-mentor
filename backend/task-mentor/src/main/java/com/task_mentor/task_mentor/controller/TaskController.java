@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,7 +35,7 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createTask(
             @RequestPart("task") @Valid TaskCreateRequest request,
@@ -143,7 +144,7 @@ public class TaskController {
         }
     }
 
-
+    @PreAuthorize("hasRole('MENTOR')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateTask(
             @PathVariable Long id,
@@ -183,7 +184,7 @@ public class TaskController {
         }
     }
 
-
+    @PreAuthorize("hasRole('MENTOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTask(
             @PathVariable Long id,
@@ -206,7 +207,7 @@ public class TaskController {
         }
     }
 
-
+    @PreAuthorize("hasRole('MENTOR')")
     @DeleteMapping("/{id}/image")
     public ResponseEntity<?> deleteTaskImage(@PathVariable Long id) {
         try {

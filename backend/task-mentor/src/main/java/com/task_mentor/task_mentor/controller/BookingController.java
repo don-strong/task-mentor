@@ -7,6 +7,7 @@ import com.task_mentor.task_mentor.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,7 +24,7 @@ public class BookingController {
     @Autowired
     private BookingService bookingService;
 
-
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping
     public ResponseEntity<?> createBooking(@RequestBody BookingRequest request) {
         try {
@@ -43,7 +44,7 @@ public class BookingController {
         }
     }
 
-
+    @PreAuthorize("hasRole('MENTOR')")
     @PutMapping("/{id}/accept")
     public ResponseEntity<?> acceptBooking(
             @PathVariable Long id,
@@ -61,7 +62,7 @@ public class BookingController {
         }
     }
 
-
+    @PreAuthorize("hasRole('MENTOR')")
     @PutMapping("/{id}/decline")
     public ResponseEntity<?> declineBooking(
             @PathVariable Long id,
@@ -79,7 +80,7 @@ public class BookingController {
         }
     }
 
-
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     @PutMapping("/{id}/cancel")
     public ResponseEntity<?> cancelBooking(
             @PathVariable Long id,
@@ -97,7 +98,7 @@ public class BookingController {
         }
     }
 
-
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getBookingById(@PathVariable Long id) {
         try {
@@ -110,7 +111,7 @@ public class BookingController {
         }
     }
 
-
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     @GetMapping
     public ResponseEntity<?> getAllBookings(
             @RequestParam(required = false) Long studentId,
@@ -145,7 +146,7 @@ public class BookingController {
         }
     }
 
-
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/student/{studentId}")
     public ResponseEntity<?> getBookingsByStudent(@PathVariable Long studentId) {
         try {
@@ -159,7 +160,7 @@ public class BookingController {
         }
     }
 
-
+    @PreAuthorize("hasRole('MENTOR')")
     @GetMapping("/mentor/{mentorId}")
     public ResponseEntity<?> getBookingsByMentor(
             @PathVariable Long mentorId,
@@ -182,7 +183,7 @@ public class BookingController {
         }
     }
 
-
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     @GetMapping("/task/{taskId}")
     public ResponseEntity<?> getBookingsByTask(@PathVariable Long taskId) {
         try {
@@ -196,7 +197,7 @@ public class BookingController {
         }
     }
 
-
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteBooking(@PathVariable Long id) {
         try {
