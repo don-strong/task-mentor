@@ -3,6 +3,7 @@ package com.task_mentor.task_mentor.config;
 import com.task_mentor.task_mentor.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
@@ -17,8 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-public class SecurityConfig
-{
+public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
 
     public SecurityConfig(CustomUserDetailsService userDetailsService) {
@@ -46,9 +46,16 @@ public class SecurityConfig
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authenticationProvider(authenticationProvider()) // <-- add this line
+                .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/api/test/public").permitAll()
+                        // Only allow GET methods publicly
+                        .requestMatchers(HttpMethod.GET, "/api/students/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/mentors/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/tasks/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/search/**").permitAll()
+                        // All other requests need authentication
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())

@@ -35,7 +35,7 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('MENTOR')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createTask(
             @RequestPart("task") @Valid TaskCreateRequest request,

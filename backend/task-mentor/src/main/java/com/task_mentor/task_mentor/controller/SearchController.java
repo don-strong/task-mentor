@@ -157,7 +157,7 @@ public class SearchController {
         return ResponseEntity.ok(response);
     }
 
-
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     @GetMapping("filter-options")
     public ResponseEntity<Map<String, Object>> getFilterOptions(){
         Map<String, Object> response = new HashMap<>();
