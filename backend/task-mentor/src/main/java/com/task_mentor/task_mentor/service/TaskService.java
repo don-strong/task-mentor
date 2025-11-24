@@ -23,6 +23,9 @@ public class TaskService {
     @Autowired
     private MentorRepository mentorRepository;
 
+    @Autowired
+    private FileStorageService fileStorageService;
+
 
     public static final String CATEGORY_RESUME_REVIEW = "Resume Review";
     public static final String CATEGORY_INTERVIEW_PREP = "Interview Prep";
@@ -58,6 +61,36 @@ public class TaskService {
         task.setCreatedAt(LocalDateTime.now());
 
         return taskRepository.save(task);
+    }
+
+    // Image handling methods for Task images (added for PR #17)
+    public void setTaskImage(Long taskId, org.springframework.web.multipart.MultipartFile imageFile) {
+        Task task = getTaskById(taskId);
+        
+        // Delete old image if exists
+        if (task.getImageFileName() != null) {
+            fileStorageService.deleteFile(task.getImageFileName());
+        }
+        
+        // Store new image
+        String fileName = fileStorageService.storeFile(imageFile);
+        task.setImageFileName(fileName);
+        task.setImageUrl("/api/files/task-images/" + fileName);
+        task.setImageFileSize(imageFile.getSize());
+        
+        taskRepository.save(task);
+    }
+
+    public void deleteTaskImage(Long taskId) {
+        Task task = getTaskById(taskId);
+        
+        if (task.getImageFileName() != null) {
+            fileStorageService.deleteFile(task.getImageFileName());
+            task.setImageFileName(null);
+            task.setImageUrl(null);
+            task.setImageFileSize(null);
+            taskRepository.save(task);
+        }
     }
 
 

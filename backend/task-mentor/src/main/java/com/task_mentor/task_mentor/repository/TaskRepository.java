@@ -61,4 +61,23 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
      */
     @Query("SELECT COUNT(t) FROM Task t WHERE t.mentor.mentorId = :mentorId")
     long countByMentorId(@Param("mentorId") Long mentorId);
+    
+    /**
+     * Find tasks that have image attachments
+     * Useful for displaying tasks with visual content
+     */
+    @Query("SELECT t FROM Task t WHERE t.imageUrl IS NOT NULL AND t.imageUrl <> ''")
+    List<Task> findTasksWithImages();
+    
+    /**
+     * Find tasks without image attachments
+     */
+    @Query("SELECT t FROM Task t WHERE t.imageUrl IS NULL OR t.imageUrl = ''")
+    List<Task> findTasksWithoutImages();
+    
+    /**
+     * Find tasks by mentor that have images
+     */
+    @Query("SELECT t FROM Task t WHERE t.mentor.mentorId = :mentorId AND t.imageUrl IS NOT NULL AND t.imageUrl <> ''")
+    List<Task> findTasksWithImagesByMentorId(@Param("mentorId") Long mentorId);
 }
