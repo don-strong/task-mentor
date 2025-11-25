@@ -44,14 +44,16 @@ public class SearchService {
         if(company != null && !company.trim().isEmpty()){
             String companyLower = company.toLowerCase();
             results = results.stream()
-                    .filter(m -> m.getCompany().toLowerCase().contains(companyLower))
+                    .filter(m -> m.getCompany() != null &&
+                            m.getCompany().toLowerCase().contains(companyLower))
                     .collect(Collectors.toList());
         }
 
         if(industry != null && !industry.trim().isEmpty()){
             String industryLower = industry.toLowerCase();
             results = results.stream()
-                    .filter(m -> m.getIndustries().toLowerCase().contains(industryLower))
+                    .filter(m -> m.getIndustries() != null &&
+                            m.getIndustries().toLowerCase().contains(industryLower))
                     .collect(Collectors.toList());
 
         }
@@ -59,7 +61,8 @@ public class SearchService {
         if(expertise != null && !expertise.trim().isEmpty()){
             String expertiseLower = expertise.toLowerCase();
             results = results.stream()
-                    .filter(m -> m.getExpertiseAreas().toLowerCase().contains(expertiseLower))
+                    .filter(m -> m.getExpertiseAreas() != null &&
+                            m.getExpertiseAreas().toLowerCase().contains(expertiseLower))
                     .collect(Collectors.toList());
         }
 

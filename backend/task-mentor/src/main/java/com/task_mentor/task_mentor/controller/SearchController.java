@@ -7,7 +7,9 @@ import com.task_mentor.task_mentor.entity.Mentor;
 import com.task_mentor.task_mentor.entity.Student;
 import com.task_mentor.task_mentor.entity.Task;
 import com.task_mentor.task_mentor.service.SearchService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -20,8 +22,10 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "http://localhost:5173")
 public class SearchController {
 
+    @Autowired
     private SearchService searchService;
 
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     @GetMapping("/mentors")
     public ResponseEntity<Map<String, Object>> searchMentors(
             @RequestParam(required = false) String name,
@@ -46,6 +50,7 @@ public class SearchController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     @GetMapping("/tasks")
     public ResponseEntity<Map<String, Object>> searchTasks(
             @RequestParam(required = false) String title,
@@ -57,7 +62,7 @@ public class SearchController {
         List<Task> tasks = searchService.searchTasks(
                 title, category, mentorId, minDuration, maxDuration);
 
-        // Convert entities to DTOs
+
         List<TaskSearchDTO> taskDTOs = tasks.stream()
                 .map(this::convertTaskToDTO)
                 .collect(Collectors.toList());
@@ -70,6 +75,7 @@ public class SearchController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     @GetMapping("/students")
     public ResponseEntity<Map<String, Object>> searchStudents(
             @RequestParam(required = false) String name,
@@ -91,6 +97,7 @@ public class SearchController {
 
     }
 
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     @GetMapping("/mentors-with-tasks")
     public ResponseEntity<Map<String, Object>> searchMentorsWithTasks(
             @RequestParam(required = false) String mentorName,
@@ -113,6 +120,8 @@ public class SearchController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     @GetMapping("/categories")
     public ResponseEntity<Map<String, Object>> getAllCategories(){
         List<String> tasks = searchService.getAllCategories();
@@ -123,6 +132,7 @@ public class SearchController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     @GetMapping("/companies")
     public ResponseEntity<Map<String, Object>> getAllCompanies(){
         List<String> companies = searchService.getAllCompanies();
@@ -135,6 +145,7 @@ public class SearchController {
     }
 
 
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     @GetMapping("/majors")
     public ResponseEntity<Map<String, Object>> getAllMajors(){
         List<String> majors = searchService.getAllMajors();
@@ -146,7 +157,7 @@ public class SearchController {
         return ResponseEntity.ok(response);
     }
 
-
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     @GetMapping("filter-options")
     public ResponseEntity<Map<String, Object>> getFilterOptions(){
         Map<String, Object> response = new HashMap<>();
@@ -158,6 +169,7 @@ public class SearchController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('STUDENT', 'MENTOR')")
     private Map<String, Object> buildMentorsFiltersMap(String name, String company, String industry,
                                                        String expertise, Integer minYearsExperience){
         Map<String, Object> filters = new HashMap<>();

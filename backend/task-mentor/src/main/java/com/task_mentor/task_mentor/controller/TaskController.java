@@ -9,181 +9,224 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * TaskController - REST API endpoints for Task management
  * Handles CRUD operations with optional image upload support
- * 
+ *
  * @author James No
  */
 @RestController
 @RequestMapping("/api/tasks")
-@CrossOrigin(origins = "*") // Allow frontend access (configure properly in production)
+@CrossOrigin(origins = "*") // Configure properly in production
 public class TaskController {
-    
+
     private final TaskService taskService;
-    
+
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
     }
-    
-    /**
-     * Create a new task with optional image
-     * POST /api/tasks
-     * 
-     * Accepts multipart form data:
-     * - task: JSON with task details (TaskCreateRequest)
-     * - image: Optional image file
-     */
+
+    @PreAuthorize("hasRole('MENTOR')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<TaskResponse> createTask(
+    public ResponseEntity<?> createTask(
             @RequestPart("task") @Valid TaskCreateRequest request,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
-        
-        // Convert DTO to entity
-        Task task = new Task();
-        task.setTitle(request.getTitle());
-        task.setDescription(request.getDescription());
-        task.setDurationMinutes(request.getDurationMinutes());
-        task.setCategory(request.getCategory());
-        
-        // Create task with or without image
-        Task createdTask;
-        if (imageFile != null && !imageFile.isEmpty()) {
-            createdTask = taskService.createTaskWithImage(request.getMentorId(), task, imageFile);
-        } else {
-            createdTask = taskService.createTask(request.getMentorId(), task);
+
+        try {
+            // Convert DTO to entity
+            Task task = new Task();
+            task.setTitle(request.getTitle());
+            task.setDescription(request.getDescription());
+            task.setDurationMinutes(request.getDurationMinutes());
+            task.setCategory(request.getCategory());
+
+            // Create task with or without image
+            Task createdTask;
+            if (imageFile != null && !imageFile.isEmpty()) {
+                createdTask = taskService.createTaskWithImage(request.getMentorId(), task, imageFile);
+            } else {
+                createdTask = taskService.createTask(request.getMentorId(), task);
+            }
+
+            // Convert to response DTO
+            TaskResponse response = TaskResponse.fromEntity(createdTask);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Error creating task: " + e.getMessage()));
         }
-        
-        // Convert to response DTO
-        TaskResponse response = TaskResponse.fromEntity(createdTask);
-        
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-    
-    /**
-     * Get a single task by ID
-     * GET /api/tasks/{id}
-     */
+
+
     @GetMapping("/{id}")
-    public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id) {
-        Task task = taskService.getTaskById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + id));
-        
-        TaskResponse response = TaskResponse.fromEntity(task);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> getTaskById(@PathVariable Long id) {
+        try {
+            Task task = taskService.getTaskById(id);
+            TaskResponse response = TaskResponse.fromEntity(task);
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(createErrorResponse(e.getMessage()));
+        }
     }
-    
-    /**
-     * Get all tasks
-     * GET /api/tasks
-     * 
-     * Optional query parameters:
-     * - category: Filter by category
-     * - mentorId: Filter by mentor
-     * - minDuration: Minimum duration in minutes
-     * - maxDuration: Maximum duration in minutes
-     * - search: Search in title
-     */
+
+
     @GetMapping
-    public ResponseEntity<List<TaskResponse>> getAllTasks(
+    public ResponseEntity<?> getAllTasks(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) Long mentorId,
             @RequestParam(required = false) Integer minDuration,
             @RequestParam(required = false) Integer maxDuration,
             @RequestParam(required = false) String search) {
-        
-        List<Task> tasks;
-        
-        // Apply filters based on query parameters
-        if (search != null && !search.trim().isEmpty()) {
-            tasks = taskService.searchTasksByTitle(search);
-        } else if (category != null && mentorId != null) {
-            tasks = taskService.getTasksByMentorAndCategory(mentorId, category);
-        } else if (mentorId != null) {
-            tasks = taskService.getTasksByMentorId(mentorId);
-        } else if (category != null) {
-            tasks = taskService.getTasksByCategory(category);
-        } else if (maxDuration != null) {
-            tasks = taskService.getTasksByMaxDuration(maxDuration);
-        } else if (minDuration != null) {
-            tasks = taskService.getTasksByMinDuration(minDuration);
-        } else {
-            tasks = taskService.getAllTasks();
+
+        try {
+            List<Task> tasks;
+
+            // Apply filters based on query parameters
+            if (search != null && !search.trim().isEmpty()) {
+                tasks = taskService.searchTasksByTitle(search);
+            } else if (category != null && mentorId != null) {
+                tasks = taskService.getTasksByMentorAndCategory(mentorId, category);
+            } else if (mentorId != null) {
+                tasks = taskService.getTasksByMentorId(mentorId);
+            } else if (category != null) {
+                tasks = taskService.getTasksByCategory(category);
+            } else if (maxDuration != null) {
+                tasks = taskService.getTasksByMaxDuration(maxDuration);
+            } else if (minDuration != null) {
+                tasks = taskService.getTasksByMinDuration(minDuration);
+            } else {
+                tasks = taskService.getAllTasks();
+            }
+
+            // Convert to response DTOs
+            List<TaskResponse> responses = tasks.stream()
+                    .map(TaskResponse::fromEntity)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(responses);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
         }
-        
-        // Convert to response DTOs
-        List<TaskResponse> responses = tasks.stream()
-                .map(TaskResponse::fromEntity)
-                .collect(Collectors.toList());
-        
-        return ResponseEntity.ok(responses);
     }
-    
-    /**
-     * Get all tasks by a specific mentor
-     * GET /api/tasks/mentor/{mentorId}
-     */
+
+
     @GetMapping("/mentor/{mentorId}")
-    public ResponseEntity<List<TaskResponse>> getTasksByMentor(@PathVariable Long mentorId) {
-        List<Task> tasks = taskService.getTasksByMentorId(mentorId);
-        
-        List<TaskResponse> responses = tasks.stream()
-                .map(TaskResponse::fromEntity)
-                .collect(Collectors.toList());
-        
-        return ResponseEntity.ok(responses);
+    public ResponseEntity<?> getTasksByMentor(@PathVariable Long mentorId) {
+        try {
+            List<Task> tasks = taskService.getTasksByMentorId(mentorId);
+
+            List<TaskResponse> responses = tasks.stream()
+                    .map(TaskResponse::fromEntity)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(responses);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        }
     }
-    
-    /**
-     * Update a task with optional new image
-     * PUT /api/tasks/{id}
-     * 
-     * Accepts multipart form data:
-     * - task: JSON with updated task details (TaskUpdateRequest)
-     * - image: Optional new image file (replaces existing if provided)
-     */
+
+    @PreAuthorize("hasRole('MENTOR')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<TaskResponse> updateTask(
+    public ResponseEntity<?> updateTask(
             @PathVariable Long id,
             @RequestPart("task") @Valid TaskUpdateRequest request,
             @RequestPart(value = "image", required = false) MultipartFile imageFile) {
-        
-        // Convert DTO to entity (only non-null fields will be updated)
-        Task updates = new Task();
-        if (request.getTitle() != null) updates.setTitle(request.getTitle());
-        if (request.getDescription() != null) updates.setDescription(request.getDescription());
-        if (request.getDurationMinutes() != null) updates.setDurationMinutes(request.getDurationMinutes());
-        if (request.getCategory() != null) updates.setCategory(request.getCategory());
-        
-        // Update task with or without image
-        Task updatedTask;
-        if (imageFile != null && !imageFile.isEmpty()) {
-            updatedTask = taskService.updateTaskWithImage(id, updates, imageFile);
-        } else {
-            updatedTask = taskService.updateTask(id, updates);
+
+        try {
+            // Convert DTO to entity (only non-null fields will be updated)
+            Task updates = new Task();
+            if (request.getTitle() != null) updates.setTitle(request.getTitle());
+            if (request.getDescription() != null) updates.setDescription(request.getDescription());
+            if (request.getDurationMinutes() != null) updates.setDurationMinutes(request.getDurationMinutes());
+            if (request.getCategory() != null) updates.setCategory(request.getCategory());
+
+            // Update task with or without image
+            Task updatedTask;
+            if (imageFile != null && !imageFile.isEmpty()) {
+                updatedTask = taskService.updateTaskWithImage(id, updates, imageFile);
+            } else {
+                updatedTask = taskService.updateTask(id, updates);
+            }
+
+            // Convert to response DTO
+            TaskResponse response = TaskResponse.fromEntity(updatedTask);
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(createErrorResponse(e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(createErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Error updating task: " + e.getMessage()));
         }
-        
-        // Convert to response DTO
-        TaskResponse response = TaskResponse.fromEntity(updatedTask);
-        
-        return ResponseEntity.ok(response);
     }
-    
-    /**
-     * Delete a task
-     * DELETE /api/tasks/{id}
-     * 
-     * Also deletes associated image file if it exists
-     */
+
+    @PreAuthorize("hasRole('MENTOR')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
-        taskService.deleteTask(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteTask(
+            @PathVariable Long id,
+            @RequestParam Long mentorId) {
+
+        try {
+            taskService.deleteTask(id, mentorId);
+            return ResponseEntity.noContent().build();
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(createErrorResponse(e.getMessage()));
+        } catch (IllegalStateException e) {
+            // Permission error or has confirmed bookings
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(createErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Error deleting task: " + e.getMessage()));
+        }
+    }
+
+    @PreAuthorize("hasRole('MENTOR')")
+    @DeleteMapping("/{id}/image")
+    public ResponseEntity<?> deleteTaskImage(@PathVariable Long id) {
+        try {
+            taskService.deleteTaskImage(id);
+            return ResponseEntity.noContent().build();
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(createErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Error deleting task image: " + e.getMessage()));
+        }
+    }
+
+
+    private Map<String, String> createErrorResponse(String message) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", message);
+        return error;
     }
 }

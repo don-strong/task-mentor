@@ -1,16 +1,20 @@
 package com.task_mentor.task_mentor.service;
 
+import com.task_mentor.task_mentor.entity.Booking;
 import com.task_mentor.task_mentor.entity.Mentor;
 import com.task_mentor.task_mentor.entity.Task;
+import com.task_mentor.task_mentor.repository.BookingRepository;
 import com.task_mentor.task_mentor.repository.MentorRepository;
 import com.task_mentor.task_mentor.repository.TaskRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import com.task_mentor.task_mentor.dto.TaskSearchDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -25,6 +29,9 @@ public class TaskService {
 
     @Autowired
     private FileStorageService fileStorageService;
+
+    @Autowired
+    private BookingRepository bookingRepository;
 
 
     public static final String CATEGORY_RESUME_REVIEW = "Resume Review";
@@ -41,16 +48,13 @@ public class TaskService {
     public static final int MAX_DURATION = 180;
 
 
-
     public Task createTask(Long mentorId, String title, String description,
                            Integer durationMinutes, String category) {
 
         Mentor mentor = mentorRepository.findById(mentorId)
                 .orElseThrow(() -> new IllegalArgumentException("Mentor not found with ID: " + mentorId));
 
-
         validateTaskData(title, description, durationMinutes, category);
-
 
         Task task = new Task();
         task.setMentor(mentor);
@@ -63,27 +67,49 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    // Image handling methods for Task images (added for PR #17)
-    public void setTaskImage(Long taskId, org.springframework.web.multipart.MultipartFile imageFile) {
+
+    public Task createTask(Long mentorId, Task task) {
+        return createTask(mentorId, task.getTitle(), task.getDescription(),
+                task.getDurationMinutes(), task.getCategory());
+    }
+
+
+    public Task createTaskWithImage(Long mentorId, Task task, MultipartFile imageFile) {
+        // First create the task
+        Task createdTask = createTask(mentorId, task);
+
+        // Then attach the image if provided
+        if (imageFile != null && !imageFile.isEmpty()) {
+            setTaskImage(createdTask.getTaskId(), imageFile);
+            // Refresh task to get updated image fields
+            return taskRepository.findById(createdTask.getTaskId())
+                    .orElseThrow(() -> new IllegalArgumentException("Task not found after creation"));
+        }
+
+        return createdTask;
+    }
+
+
+    public void setTaskImage(Long taskId, MultipartFile imageFile) {
         Task task = getTaskById(taskId);
-        
+
         // Delete old image if exists
         if (task.getImageFileName() != null) {
             fileStorageService.deleteFile(task.getImageFileName());
         }
-        
+
         // Store new image
         String fileName = fileStorageService.storeFile(imageFile);
         task.setImageFileName(fileName);
         task.setImageUrl("/api/files/task-images/" + fileName);
         task.setImageFileSize(imageFile.getSize());
-        
+
         taskRepository.save(task);
     }
 
     public void deleteTaskImage(Long taskId) {
         Task task = getTaskById(taskId);
-        
+
         if (task.getImageFileName() != null) {
             fileStorageService.deleteFile(task.getImageFileName());
             task.setImageFileName(null);
@@ -94,17 +120,54 @@ public class TaskService {
     }
 
 
+
+    public Task updateTask(Long taskId, Task updates) {
+        Task task = getTaskById(taskId);
+
+        if (updates.getTitle() != null && !updates.getTitle().trim().isEmpty()) {
+            validateTitle(updates.getTitle());
+            task.setTitle(updates.getTitle().trim());
+        }
+        if (updates.getDescription() != null && !updates.getDescription().trim().isEmpty()) {
+            validateDescription(updates.getDescription());
+            task.setDescription(updates.getDescription().trim());
+        }
+        if (updates.getDurationMinutes() != null) {
+            validateDuration(updates.getDurationMinutes());
+            task.setDurationMinutes(updates.getDurationMinutes());
+        }
+        if (updates.getCategory() != null && !updates.getCategory().trim().isEmpty()) {
+            validateCategory(updates.getCategory());
+            task.setCategory(updates.getCategory().trim());
+        }
+
+        return taskRepository.save(task);
+    }
+
+
+    public Task updateTaskWithImage(Long taskId, Task updates, MultipartFile imageFile) {
+        Task task = updateTask(taskId, updates);
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            setTaskImage(taskId, imageFile);
+            // Refresh task to get updated image fields
+            return taskRepository.findById(taskId)
+                    .orElseThrow(() -> new IllegalArgumentException("Task not found after update"));
+        }
+
+        return task;
+    }
+
+
     public Task updateTask(Long taskId, Long mentorId, String title, String description,
                            Integer durationMinutes, String category) {
 
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
 
-
         if (!task.getMentor().getMentorId().equals(mentorId)) {
             throw new IllegalStateException("Mentor does not have permission to update this task");
         }
-
 
         if (title != null && !title.trim().isEmpty()) {
             validateTitle(title);
@@ -127,9 +190,15 @@ public class TaskService {
     }
 
 
+
     public Task getTaskById(Long taskId) {
         return taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+    }
+
+
+    public Optional<Task> findTaskById(Long taskId) {
+        return taskRepository.findById(taskId);
     }
 
 
@@ -142,13 +211,44 @@ public class TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
 
-
+        // Permission check
         if (!task.getMentor().getMentorId().equals(mentorId)) {
             throw new IllegalStateException("Mentor does not have permission to delete this task");
         }
 
+        // Check for confirmed upcoming bookings (TASK-002 requirement)
+        List<Booking> confirmedBookings = bookingRepository.findByTask(task).stream()
+                .filter(b -> "accepted".equals(b.getStatus()) &&
+                        b.getProposedDatetime().isAfter(LocalDateTime.now()))
+                .toList();
+
+        if (!confirmedBookings.isEmpty()) {
+            throw new IllegalStateException(
+                    "Cannot delete task with " + confirmedBookings.size() +
+                            " confirmed upcoming session(s). Please cancel the sessions first.");
+        }
+
+        // Delete associated image if exists
+        if (task.getImageFileName() != null) {
+            fileStorageService.deleteFile(task.getImageFileName());
+        }
+
         taskRepository.deleteById(taskId);
     }
+
+
+    public void deleteTask(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+
+        // Delete associated image if exists
+        if (task.getImageFileName() != null) {
+            fileStorageService.deleteFile(task.getImageFileName());
+        }
+
+        taskRepository.deleteById(taskId);
+    }
+
 
 
     public boolean doesTaskExist(Long taskId) {
@@ -157,9 +257,7 @@ public class TaskService {
 
 
 
-
     public List<Task> getTasksByMentor(Long mentorId) {
-
         if (!mentorRepository.existsById(mentorId)) {
             throw new IllegalArgumentException("Mentor not found with ID: " + mentorId);
         }
@@ -167,8 +265,12 @@ public class TaskService {
     }
 
 
-    public List<Task> getTasksByMentorAndCategory(Long mentorId, String category) {
+    public List<Task> getTasksByMentorId(Long mentorId) {
+        return getTasksByMentor(mentorId);
+    }
 
+
+    public List<Task> getTasksByMentorAndCategory(Long mentorId, String category) {
         if (!mentorRepository.existsById(mentorId)) {
             throw new IllegalArgumentException("Mentor not found with ID: " + mentorId);
         }
@@ -177,15 +279,13 @@ public class TaskService {
     }
 
 
-    public long countTasksByMentor(Long mentorId) {
 
+    public long countTasksByMentor(Long mentorId) {
         if (!mentorRepository.existsById(mentorId)) {
             throw new IllegalArgumentException("Mentor not found with ID: " + mentorId);
         }
         return taskRepository.countByMentorId(mentorId);
     }
-
-
 
 
     public List<Task> getTasksByCategory(String category) {
@@ -211,13 +311,24 @@ public class TaskService {
     }
 
 
+    public List<Task> getTasksByMaxDuration(Integer maxDuration) {
+        return getShortDurationTasks(maxDuration);
+    }
+
+
     public List<Task> getLongDurationTasks(Integer minDuration) {
         if (minDuration == null || minDuration <= 0) {
-            minDuration = 90; // Default to 90 minutes or more
+            minDuration = 90;
         }
         validateDuration(minDuration);
         return taskRepository.findByDurationMinutesGreaterThanEqual(minDuration);
     }
+
+
+    public List<Task> getTasksByMinDuration(Integer minDuration) {
+        return getLongDurationTasks(minDuration);
+    }
+
 
 
     public List<Task> getTasksByDurationRange(Integer minDuration, Integer maxDuration) {
@@ -230,13 +341,11 @@ public class TaskService {
         validateDuration(minDuration);
         validateDuration(maxDuration);
 
-
         return taskRepository.findAll().stream()
                 .filter(task -> task.getDurationMinutes() >= minDuration
                         && task.getDurationMinutes() <= maxDuration)
                 .toList();
     }
-
 
 
 
@@ -254,6 +363,7 @@ public class TaskService {
 
         return stats;
     }
+
 
 
     public List<TaskSearchDTO> getAllTaskStatistics() {
@@ -292,7 +402,6 @@ public class TaskService {
                 })
                 .toList();
     }
-
 
 
     private void validateTaskData(String title, String description, Integer durationMinutes, String category) {

@@ -10,6 +10,7 @@ import com.task_mentor.task_mentor.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,6 +49,7 @@ public class StudentController {
      * @return 201 CREATED with StudentStatistics, or error message
      */
 
+    @PreAuthorize("hasRole('STUDENT')")
     @PostMapping
     public ResponseEntity<?> createStudentProfile(
             @RequestBody CreateStudentRequest request,
@@ -102,6 +104,7 @@ public class StudentController {
      * @param authentication Auto-injected by Spring Security
      * @return 200 OK with StudentStatistics, or error 404 if profile doesn't exist
      */
+    @PreAuthorize("hasRole('STUDENT')")
     @GetMapping("/me")
     public ResponseEntity<?> getMyProfile(Authentication authentication) {
         try {
@@ -137,6 +140,7 @@ public class StudentController {
      * @param authentication Auto-injected by Spring Security
      * @return 200 OK with StudentStatistics, or 404 if the profile doesn't exist
      */
+    @PreAuthorize("hasRole('STUDENT')")
     @PutMapping("/me")
     public ResponseEntity<?> updateMyProfile(
             @RequestBody StudentRequest request,

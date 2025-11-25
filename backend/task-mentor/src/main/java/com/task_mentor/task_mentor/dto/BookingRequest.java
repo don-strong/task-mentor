@@ -1,12 +1,23 @@
 package com.task_mentor.task_mentor.dto;
 
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.LocalDateTime;
 
 
 public class BookingRequest {
+    @NotNull(message = "Student ID is required")
     private Long studentId;
+
+    @NotNull(message = "Mentor ID is required")
     private Long mentorId;
+
+    @NotNull(message = "Task ID is required")
     private Long taskId;
+
+    @NotNull(message = "Proposed datetime is required")
+    @Future(message = "Proposed date must be in the future")
     private LocalDateTime proposedDatetime;
 
 

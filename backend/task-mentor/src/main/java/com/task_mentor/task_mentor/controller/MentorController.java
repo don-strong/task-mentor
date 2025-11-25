@@ -8,6 +8,7 @@ import com.task_mentor.task_mentor.service.MentorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,7 +24,7 @@ public class MentorController {
     @Autowired
     private MentorService mentorService;
 
-
+    @PreAuthorize("hasRole('MENTOR')")
     @PostMapping
     public ResponseEntity<?> createMentor(@RequestBody MentorCreateRequest request) {
         try {
@@ -63,6 +64,7 @@ public class MentorController {
         return ResponseEntity.ok(mentors);
     }
 
+    @PreAuthorize("hasRole('MENTOR')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateMentor(
             @PathVariable Long id,
@@ -85,11 +87,11 @@ public class MentorController {
         }
     }
 
-
+    @PreAuthorize("hasRole('MENTOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteMentor(@PathVariable Long id) {
         try {
-            mentorService.deleteMenotorProfile(id);
+            mentorService.deleteMentorProfile(id);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
