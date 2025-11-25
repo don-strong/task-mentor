@@ -1,21 +1,50 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import studentService from '../services/studentService';
 
 function StudentProfile() {
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasProfile, setHasProfile] = useState(false);
+  
   const [formData, setFormData] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    university: 'State University',
-    major: 'Computer Science',
-    graduationYear: '2025',
-    bio: 'Passionate student looking to learn from industry professionals.',
-    interests: ['Web Development', 'Machine Learning', 'Career Advice'],
-    linkedIn: 'linkedin.com/in/johndoe',
-    github: 'github.com/johndoe',
+    name: '',
+    bio: '',
+    major: '',
+    graduationYear: '',
+    careerInterests: '',
+    profilePhotoUrl: '',
   });
 
   const [errors, setErrors] = useState({});
+
+  // Load profile on component mount
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    setIsLoading(true);
+    try {
+      const profile = await studentService.getMyProfile();
+      setFormData({
+        name: profile.name || '',
+        bio: profile.bio || '',
+        major: profile.major || '',
+        graduationYear: profile.graduationYear?.toString() || '',
+        careerInterests: profile.careerInterests || '',
+        profilePhotoUrl: profile.profilePhotoUrl || '',
+      });
+      setHasProfile(true);
+    } catch (error) {
+      console.error('Error loading profile:', error);
+      // Profile doesn't exist yet - user needs to create one
+      setHasProfile(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,49 +52,31 @@ function StudentProfile() {
       ...prev,
       [name]: value,
     }));
-  };
-
-  const handleInterestChange = (index, value) => {
-    const newInterests = [...formData.interests];
-    newInterests[index] = value;
-    setFormData((prev) => ({
-      ...prev,
-      interests: newInterests,
-    }));
-  };
-
-  const addInterest = () => {
-    setFormData((prev) => ({
-      ...prev,
-      interests: [...prev.interests, ''],
-    }));
-  };
-
-  const removeInterest = (index) => {
-    const newInterests = formData.interests.filter((_, i) => i !== index);
-    setFormData((prev) => ({
-      ...prev,
-      interests: newInterests,
-    }));
+    // Clear error for this field
+    if (errors[name]) {
+      setErrors(prev => ({...prev, [name]: ''}));
+    }
   };
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.firstName) {
-      newErrors.firstName = 'First name is required';
+    if (!formData.name || formData.name.trim().length < 2) {
+      newErrors.name = 'Name must be at least 2 characters';
     }
 
-    if (!formData.lastName) {
-      newErrors.lastName = 'Last name is required';
-    }
-
-    if (!formData.university) {
-      newErrors.university = 'University is required';
-    }
-
-    if (!formData.major) {
+    if (!formData.major || formData.major.trim().length === 0) {
       newErrors.major = 'Major is required';
+    }
+
+    if (!formData.graduationYear) {
+      newErrors.graduationYear = 'Graduation year is required';
+    } else {
+      const year = parseInt(formData.graduationYear);
+      const currentYear = new Date().getFullYear();
+      if (year < currentYear - 10 || year > currentYear + 10) {
+        newErrors.graduationYear = 'Graduation year must be within 10 years';
+      }
     }
 
     setErrors(newErrors);
@@ -79,21 +90,56 @@ function StudentProfile() {
       return;
     }
 
+    setIsLoading(true);
+
     try {
-      // TODO: Replace with actual API call
-      console.log('Updated profile data:', formData);
-      alert('Profile updated successfully!');
+      const profileData = {
+        name: formData.name.trim(),
+        bio: formData.bio?.trim() || null,
+        major: formData.major.trim(),
+        graduationYear: parseInt(formData.graduationYear),
+        careerInterests: formData.careerInterests?.trim() || null,
+        profilePhotoUrl: formData.profilePhotoUrl?.trim() || null,
+      };
+
+      if (hasProfile) {
+        // Update existing profile
+        await studentService.updateProfile(profileData);
+        alert('Profile updated successfully!');
+      } else {
+        // Create new profile
+        await studentService.createProfile(profileData);
+        alert('Profile created successfully!');
+        setHasProfile(true);
+      }
+      
       setIsEditing(false);
+      await loadProfile(); // Reload to get updated data
     } catch (error) {
-      console.error('Profile update error:', error);
-      alert('Failed to update profile. Please try again.');
+      console.error('Profile save error:', error);
+      const errorMessage = error?.error || error?.message || 'Failed to save profile. Please try again.';
+      setErrors({ submit: errorMessage });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setErrors({});
+    loadProfile(); // Reload original data
   };
+
+  if (isLoading && !formData.name) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -102,13 +148,26 @@ function StudentProfile() {
           {/* Header */}
           <div className="px-6 py-5 border-b border-gray-200">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900">Student Profile</h2>
-              {!isEditing && (
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Student Profile</h2>
+                <p className="text-sm text-gray-500 mt-1">{user?.email}</p>
+              </div>
+              {!isEditing && hasProfile && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                 >
                   Edit Profile
+                </button>
+              )}
+              {!hasProfile && !isEditing && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                >
+                  Create Profile
                 </button>
               )}
             </div>
@@ -116,55 +175,48 @@ function StudentProfile() {
 
           {/* Profile Content */}
           <form onSubmit={handleSubmit} className="px-6 py-6 space-y-6">
+            {errors.submit && (
+              <div className="rounded-md bg-red-50 p-4">
+                <p className="text-sm text-red-800">{errors.submit}</p>
+              </div>
+            )}
+
             {/* Personal Information */}
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                    First Name
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                    Full Name *
                   </label>
                   <input
-                    id="firstName"
-                    name="firstName"
+                    id="name"
+                    name="name"
                     type="text"
-                    value={formData.firstName}
+                    value={formData.name}
                     onChange={handleChange}
-                    disabled={!isEditing}
+                    disabled={!isEditing || isLoading}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    placeholder="John Doe"
                   />
-                  {errors.firstName && (
-                    <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-600">{errors.name}</p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                    Last Name
+                  <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
+                    Bio
                   </label>
-                  <input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    value={formData.lastName}
+                  <textarea
+                    id="bio"
+                    name="bio"
+                    rows={4}
+                    value={formData.bio}
                     onChange={handleChange}
-                    disabled={!isEditing}
+                    disabled={!isEditing || isLoading}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                  {errors.lastName && <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>}
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    disabled={true}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed"
+                    placeholder="Tell mentors about yourself..."
                   />
                 </div>
               </div>
@@ -175,26 +227,8 @@ function StudentProfile() {
               <h3 className="text-lg font-medium text-gray-900 mb-4">Academic Information</h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="university" className="block text-sm font-medium text-gray-700">
-                    University
-                  </label>
-                  <input
-                    id="university"
-                    name="university"
-                    type="text"
-                    value={formData.university}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                  {errors.university && (
-                    <p className="mt-1 text-sm text-red-600">{errors.university}</p>
-                  )}
-                </div>
-
-                <div>
                   <label htmlFor="major" className="block text-sm font-medium text-gray-700">
-                    Major
+                    Major *
                   </label>
                   <input
                     id="major"
@@ -202,117 +236,69 @@ function StudentProfile() {
                     type="text"
                     value={formData.major}
                     onChange={handleChange}
-                    disabled={!isEditing}
+                    disabled={!isEditing || isLoading}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    placeholder="Computer Science"
                   />
                   {errors.major && <p className="mt-1 text-sm text-red-600">{errors.major}</p>}
                 </div>
 
                 <div>
                   <label htmlFor="graduationYear" className="block text-sm font-medium text-gray-700">
-                    Expected Graduation Year
+                    Expected Graduation Year *
                   </label>
                   <input
                     id="graduationYear"
                     name="graduationYear"
-                    type="text"
+                    type="number"
                     value={formData.graduationYear}
                     onChange={handleChange}
-                    disabled={!isEditing}
+                    disabled={!isEditing || isLoading}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    placeholder="2025"
                   />
+                  {errors.graduationYear && (
+                    <p className="mt-1 text-sm text-red-600">{errors.graduationYear}</p>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Bio */}
+            {/* Career Interests */}
             <div>
-              <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
-                Bio
+              <label htmlFor="careerInterests" className="block text-sm font-medium text-gray-700">
+                Career Interests
               </label>
               <textarea
-                id="bio"
-                name="bio"
-                rows={4}
-                value={formData.bio}
+                id="careerInterests"
+                name="careerInterests"
+                rows={3}
+                value={formData.careerInterests}
                 onChange={handleChange}
-                disabled={!isEditing}
+                disabled={!isEditing || isLoading}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                placeholder="Web Development, Machine Learning, Career Advice"
               />
+              <p className="mt-1 text-sm text-gray-500">
+                Separate multiple interests with commas
+              </p>
             </div>
 
-            {/* Interests */}
+            {/* Profile Photo URL */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Areas of Interest
+              <label htmlFor="profilePhotoUrl" className="block text-sm font-medium text-gray-700">
+                Profile Photo URL
               </label>
-              <div className="space-y-2">
-                {formData.interests.map((interest, index) => (
-                  <div key={index} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={interest}
-                      onChange={(e) => handleInterestChange(index, e.target.value)}
-                      disabled={!isEditing}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    />
-                    {isEditing && (
-                      <button
-                        type="button"
-                        onClick={() => removeInterest(index)}
-                        className="px-3 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              {isEditing && (
-                <button
-                  type="button"
-                  onClick={addInterest}
-                  className="mt-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
-                >
-                  + Add Interest
-                </button>
-              )}
-            </div>
-
-            {/* Social Links */}
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Social Links</h3>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="linkedIn" className="block text-sm font-medium text-gray-700">
-                    LinkedIn
-                  </label>
-                  <input
-                    id="linkedIn"
-                    name="linkedIn"
-                    type="text"
-                    value={formData.linkedIn}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="github" className="block text-sm font-medium text-gray-700">
-                    GitHub
-                  </label>
-                  <input
-                    id="github"
-                    name="github"
-                    type="text"
-                    value={formData.github}
-                    onChange={handleChange}
-                    disabled={!isEditing}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-              </div>
+              <input
+                id="profilePhotoUrl"
+                name="profilePhotoUrl"
+                type="url"
+                value={formData.profilePhotoUrl}
+                onChange={handleChange}
+                disabled={!isEditing || isLoading}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                placeholder="https://example.com/photo.jpg"
+              />
             </div>
 
             {/* Action Buttons */}
@@ -321,15 +307,17 @@ function StudentProfile() {
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                 >
-                  Save Changes
+                  {isLoading ? 'Saving...' : hasProfile ? 'Save Changes' : 'Create Profile'}
                 </button>
               </div>
             )}
