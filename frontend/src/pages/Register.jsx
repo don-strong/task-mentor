@@ -10,7 +10,7 @@ function Register() {
     email: '',
     password: '',
     confirmPassword: '',
-    accountType: 'student', // 'student' or 'mentor'
+    accountType: 'student', 
   });
 
   const [errors, setErrors] = useState({});
