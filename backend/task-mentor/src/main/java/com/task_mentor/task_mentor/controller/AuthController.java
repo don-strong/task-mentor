@@ -58,20 +58,31 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(Authentication authentication) {
+        System.out.println("🔐 Login attempt received");
+        System.out.println("Authentication: " + authentication);
+        System.out.println("Is Authenticated: " + (authentication != null && authentication.isAuthenticated()));
+
         if (authentication == null || !authentication.isAuthenticated()) {
+            System.out.println("❌ Authentication failed - null or not authenticated");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(createErrorResponse("Invalid credentials"));
         }
 
         try {
             String email = authentication.getName();
+            System.out.println("✅ Authenticated user email: " + email);
+
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
+
+            System.out.println("✅ User found in database: " + user.getEmail());
 
             AuthResponse response = AuthResponse.fromUser(user, "Login successful");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+            System.out.println("❌ Error during login: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(createErrorResponse("Login failed: " + e.getMessage()));
         }
