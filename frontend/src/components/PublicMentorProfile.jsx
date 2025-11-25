@@ -1,62 +1,82 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import mentorService from '../services/mentorService';
+import taskService from '../services/taskService';
+import { useAuth } from '../context/AuthContext';
 
 function PublicMentorProfile() {
-  // Mock mentor data - would come from API in real implementation
-  const [mentor] = useState({
-    id: 1,
-    firstName: 'Jane',
-    lastName: 'Smith',
-    title: 'Senior Software Engineer',
-    company: 'Tech Corp',
-    yearsOfExperience: 8,
-    bio: 'Experienced software engineer passionate about mentoring the next generation of developers. I have worked on large-scale web applications and enjoy sharing my knowledge with aspiring developers.',
-    expertise: ['Web Development', 'System Design', 'Career Guidance'],
-    linkedIn: 'linkedin.com/in/janesmith',
-    website: 'janesmith.dev',
-    availability: 'weekends',
-    profileImage: null,
-  });
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
+  
+  const [mentor, setMentor] = useState(null);
+  const [tasks, setTasks] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [tasks] = useState([
-    {
-      id: 1,
-      title: 'Resume Review',
-      description: 'I will review your resume and provide detailed feedback on content, structure, and formatting',
-      category: 'Career Advice',
-      duration: 30,
-      price: 25,
-    },
-    {
-      id: 2,
-      title: 'Mock Interview',
-      description: 'Practice technical or behavioral interviews with real-time feedback',
-      category: 'Interview Prep',
-      duration: 60,
-      price: 50,
-    },
-    {
-      id: 3,
-      title: 'Code Review Session',
-      description: 'Get feedback on your code quality, architecture, and best practices',
-      category: 'Code Review',
-      duration: 45,
-      price: 40,
-    },
-  ]);
+  useEffect(() => {
+    loadMentorData();
+  }, [id]);
 
-  const [selectedTask, setSelectedTask] = useState(null);
+  const loadMentorData = async () => {
+    setIsLoading(true);
+    try {
+      // Load mentor profile
+      const mentorData = await mentorService.getMentorById(id);
+      setMentor(mentorData);
+
+      // Load mentor's tasks
+      const mentorTasks = await taskService.getTasksByMentor(id);
+      setTasks(mentorTasks);
+    } catch (error) {
+      console.error('Error loading mentor data:', error);
+      alert('Mentor not found');
+      navigate('/');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleBookTask = (task) => {
-    setSelectedTask(task);
+    if (!isAuthenticated) {
+      alert('Please login to book a session');
+      navigate('/login');
+      return;
+    }
+
+    if (user?.accountType !== 'student') {
+      alert('Only students can book sessions');
+      return;
+    }
+
     // TODO: Implement booking modal or navigate to booking page
-    alert(`Booking ${task.title}. This would open a booking modal in the full implementation.`);
+    alert(`Booking ${task.title}. Booking feature coming soon!`);
   };
 
-  const availabilityDisplay = {
-    weekdays: 'Weekdays',
-    weekends: 'Weekends',
-    both: 'Weekdays & Weekends',
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading mentor profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!mentor) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Mentor not found</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Parse comma-separated strings into arrays
+  const expertiseAreas = mentor.expertiseAreas 
+    ? mentor.expertiseAreas.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -64,74 +84,54 @@ function PublicMentorProfile() {
       <div className="bg-white shadow">
         <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row gap-6">
-            {/* Profile Image Placeholder */}
+            {/* Profile Image */}
             <div className="shrink-0">
-              <div className="h-32 w-32 rounded-full bg-indigo-200 flex items-center justify-center text-4xl text-indigo-700 font-bold">
-                {mentor.firstName[0]}
-                {mentor.lastName[0]}
-              </div>
+              {mentor.profilePhotoUrl ? (
+                <img
+                  src={mentor.profilePhotoUrl}
+                  alt={mentor.name}
+                  className="h-32 w-32 rounded-full object-cover"
+                />
+              ) : (
+                <div className="h-32 w-32 rounded-full bg-indigo-200 flex items-center justify-center text-4xl text-indigo-700 font-bold">
+                  {mentor.name.charAt(0)}
+                </div>
+              )}
             </div>
 
             {/* Mentor Info */}
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900">
-                {mentor.firstName} {mentor.lastName}
-              </h1>
-              <p className="text-xl text-gray-600 mt-1">
-                {mentor.title} at {mentor.company}
-              </p>
-              <p className="text-gray-600 mt-1">{mentor.yearsOfExperience} years of experience</p>
+              <h1 className="text-3xl font-bold text-gray-900">{mentor.name}</h1>
+              {mentor.roleTitle && mentor.company && (
+                <p className="text-xl text-gray-600 mt-1">
+                  {mentor.roleTitle} at {mentor.company}
+                </p>
+              )}
+              {mentor.yearsExperience && (
+                <p className="text-gray-600 mt-1">{mentor.yearsExperience} years of experience</p>
+              )}
 
               {/* Expertise Tags */}
-              <div className="mt-4 flex flex-wrap gap-2">
-                {mentor.expertise.map((area, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-indigo-100 text-indigo-800"
-                  >
-                    {area}
-                  </span>
-                ))}
-              </div>
-
-              {/* Availability */}
-              <div className="mt-4">
-                <span className="text-sm text-gray-600">
-                  📅 Available: {availabilityDisplay[mentor.availability]}
-                </span>
-              </div>
+              {expertiseAreas.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {expertiseAreas.map((area, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-indigo-100 text-indigo-800"
+                    >
+                      {area}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Bio */}
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">About</h2>
-            <p className="text-gray-700">{mentor.bio}</p>
-          </div>
-
-          {/* Social Links */}
-          {(mentor.linkedIn || mentor.website) && (
-            <div className="mt-6 flex gap-4">
-              {mentor.linkedIn && (
-                <a
-                  href={`https://${mentor.linkedIn}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
-                >
-                  🔗 LinkedIn
-                </a>
-              )}
-              {mentor.website && (
-                <a
-                  href={`https://${mentor.website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
-                >
-                  🌐 Website
-                </a>
-              )}
+          {mentor.bio && (
+            <div className="mt-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">About</h2>
+              <p className="text-gray-700">{mentor.bio}</p>
             </div>
           )}
         </div>
@@ -148,10 +148,9 @@ function PublicMentorProfile() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2">
             {tasks.map((task) => (
-              <div key={task.id} className="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow">
-                <div className="flex justify-between items-start mb-3">
+              <div key={task.taskId} className="bg-white shadow rounded-lg p-6 hover:shadow-lg transition-shadow">
+                <div className="mb-3">
                   <h3 className="text-xl font-semibold text-gray-900">{task.title}</h3>
-                  <span className="text-2xl font-bold text-indigo-600">${task.price}</span>
                 </div>
 
                 <p className="text-gray-600 mb-4">{task.description}</p>
@@ -160,7 +159,7 @@ function PublicMentorProfile() {
                   <span className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-800">
                     {task.category}
                   </span>
-                  <span>⏱️ {task.duration} min</span>
+                  <span>⏱️ {task.durationMinutes} min</span>
                 </div>
 
                 <button
@@ -173,14 +172,6 @@ function PublicMentorProfile() {
             ))}
           </div>
         )}
-      </div>
-
-      {/* Reviews Section (Placeholder) */}
-      <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Reviews</h2>
-        <div className="bg-white shadow rounded-lg p-6">
-          <p className="text-gray-500 text-center">No reviews yet</p>
-        </div>
       </div>
     </div>
   );
