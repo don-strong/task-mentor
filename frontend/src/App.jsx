@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Register from './components/Register';
 import Login from './components/Login';
 import StudentProfile from './components/StudentProfile';
@@ -92,15 +94,42 @@ function DemoCard({ title, description, link }) {
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/student-profile" element={<StudentProfile />} />
-        <Route path="/mentor-profile" element={<MentorProfile />} />
-        <Route path="/task-creation" element={<TaskCreation />} />
-        <Route path="/mentor/:id" element={<PublicMentorProfile />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          
+          {/* Protected Routes */}
+          <Route 
+            path="/student-profile" 
+            element={
+              <ProtectedRoute requiredRole="student">
+                <StudentProfile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/mentor-profile" 
+            element={
+              <ProtectedRoute requiredRole="mentor">
+                <MentorProfile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/task-creation" 
+            element={
+              <ProtectedRoute requiredRole="mentor">
+                <TaskCreation />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Public Routes */}
+          <Route path="/mentor/:id" element={<PublicMentorProfile />} />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }
