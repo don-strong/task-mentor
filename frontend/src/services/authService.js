@@ -1,55 +1,78 @@
-import api from './api'
+import api from './api';
 
 const authService = {
-  register: async(userData) =>{
-    try{
+  // Register a new user
+  register: async (userData) => {
+    try {
       const response = await api.post('/auth/register', userData);
       return response.data;
-    }catch(error){
+    } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
+  // Login user
   login: async (email, password) => {
-    try{
+    try {
+      // Create base64 encoded credentials
       const credentials = btoa(`${email}:${password}`);
-
-      const response = await api.post('/auth/login', null,{
-        headers:{
+      
+      console.log('🔐 Attempting login for:', email);
+      
+      const response = await api.post('/auth/login', null, {
+        headers: {
           'Authorization': `Basic ${credentials}`
         },
         withCredentials: true
-      })
-
-      if(response.data){
+      });
+      
+      console.log('✅ Login successful, response:', response.data);
+      
+      // Store user info in localStorage
+      if (response.data) {
         localStorage.setItem('user', JSON.stringify(response.data));
-        localStrogae.setItem('credentials', credentials);
+        localStorage.setItem('credentials', credentials);
+        console.log('✅ User data stored in localStorage');
       }
+      
       return response.data;
-    }catch(error){
-      throw error.response?.data || error.message
+    } catch (error) {
+      console.error('❌ Login failed:', error);
+      console.error('Error response:', error.response?.data);
+      throw error.response?.data || error.message;
     }
   },
 
-  logout: () =>{
+  // Logout user
+  logout: () => {
     localStorage.removeItem('user');
     localStorage.removeItem('credentials');
-    window.location.href='/login';
+    window.location.href = '/login';
   },
 
-  getCurrentUser: () =>{
+  // Get current user from localStorage
+  getCurrentUser: () => {
     const userStr = localStorage.getItem('user');
-    return userStr ? JSON.parse(userStr) : null;
+    if (userStr) {
+      try {
+        return JSON.parse(userStr);
+      } catch (e) {
+        console.error('Failed to parse user from localStorage:', e);
+        return null;
+      }
+    }
+    return null;
   },
 
-  getCredentials: () =>{
+  // Get stored credentials
+  getCredentials: () => {
     return localStorage.getItem('credentials');
   },
 
-  isAuthenticated: () =>{
-    return !!localStorage.getItem('credentials')
+  // Check if user is authenticated
+  isAuthenticated: () => {
+    return !!localStorage.getItem('credentials') && !!localStorage.getItem('user');
   }
-
 };
 
 export default authService;

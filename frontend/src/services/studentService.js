@@ -1,67 +1,65 @@
 import api from './api';
 import authService from './authService';
 
-const getAuthHeaders = () => {
-  const credentials = authService.getCredentials
-  return credentials ? { 'Authorization': `Basic ${credentials}`} : {};
-};
+const getAuthHeaders = () => ({
+  'Authorization': `Basic ${authService.getCredentials()}`
+});
 
 const studentService = {
-  createProfile: async (profileData) =>{
-    try{
+  
+  createProfile: async (profileData) => {
+    try {
       const response = await api.post('/students', profileData, {
-        headers: getAuthHeaders(),
-        withCredentials: true
+        headers: getAuthHeaders()
       });
       return response.data;
-    }catch(error){
+    } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
-  getMyProfile: async() =>{
-    try{
+  getMyProfile: async () => {
+    try {
       const response = await api.get('/students/me', {
-        headers: getAuthHeaders(),
-        withCredentials: true
+        headers: getAuthHeaders()
       });
       return response.data;
-    }catch(error){
+    } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
 
-  updateProfile: async (profileData) =>{
-    try{
+  updateProfile: async (profileData) => {
+    try {
       const response = await api.put('/students/me', profileData, {
-        headers: getAuthHeaders(),
-        withCredentials: true
+        headers: getAuthHeaders()
       });
       return response.data;
-    }catch(error){
+    } catch (error) {
       throw error.response?.data || error.message;
     }
   },
 
+  
   getStudentById: async (id) => {
-    try{
+    try {
       const response = await api.get(`/students/${id}`);
       return response.data;
-    }catch(error){
-      throw error.response?.data || error.messasge;
+    } catch (error) {
+      throw error.response?.data || error.message;
     }
   },
 
-  getAllStudents: async () =>{
-    try{
+ 
+  getAllStudents: async () => {
+    try {
       const response = await api.get('/students');
       return response.data;
-    }catch(error){
-      throw error.response?.data || error.message
+    } catch (error) {
+      throw error.response?.data || error.message;
     }
   }
-
 };
 
 export default studentService;
