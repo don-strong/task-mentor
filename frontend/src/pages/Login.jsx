@@ -104,7 +104,7 @@ function Login() {
                 value={formData.email}
                 onChange={handleChange}
                 disabled={isLoading}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
               />
               {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
             </div>
@@ -121,7 +121,7 @@ function Login() {
                 value={formData.password}
                 onChange={handleChange}
                 disabled={isLoading}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
               />
               {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
             </div>
