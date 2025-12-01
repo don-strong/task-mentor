@@ -63,8 +63,9 @@ const Navbar = () => {
 
                 {user?.accountType === 'mentor' && (
                   <>
+                    {/* ✅ Changed from /mentor-dashboard to /dashboard */}
                     <Link
-                      to="/mentor-dashboard"
+                      to="/dashboard"
                       className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
                     >
                       Dashboard
@@ -97,6 +98,7 @@ const Navbar = () => {
                   <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">
                     {user?.accountType}
                   </span>
+                  {/* ✅ Fixed logout button styling */}
                   <button
                     onClick={handleLogout}
                     className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition"
@@ -187,8 +189,9 @@ const Navbar = () => {
                 )}
                 {user?.accountType === 'mentor' && (
                   <>
+                    {/* ✅ Changed from /mentor-dashboard to /dashboard */}
                     <Link
-                      to="/mentor-dashboard"
+                      to="/dashboard"
                       className="block px-3 py-2 text-gray-700 hover:bg-indigo-50 rounded-md"
                       onClick={() => setMobileMenuOpen(false)}
                     >

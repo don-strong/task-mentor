@@ -502,7 +502,7 @@ const Search = () => {
           >
             Tasks
           </button>
-          {user?.role === 'mentor' && (
+          {user?.accountType === 'mentor' && (
             <button
               onClick={() => setSearchType('students')}
               className={`px-6 py-2 rounded-md font-medium transition ${

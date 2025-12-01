@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import bookingService from '../services/bookingService';
 import taskService from '../services/taskService';
+import mentorService from '../services/mentorService';
+import studentService from '../services/studentService';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -13,6 +15,7 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('bookings');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [profileId, setProfileId] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -23,19 +26,39 @@ const Dashboard = () => {
       setLoading(true);
       setError(null);
 
-      if (user?.role === 'student') {
-        const bookingsData = await bookingService.getBookingsByStudent(user.userId);
-        setBookings(bookingsData);
-      } else if (user?.role === 'mentor') {
-        const bookingsData = await bookingService.getBookingsByMentor(user.userId);
-        setBookings(bookingsData);
-        
-        const tasksData = await taskService.getTasksByMentor(user.userId);
-        setTasks(tasksData);
+      if (user?.accountType === 'student') {
+        try {
+          const studentProfile = await studentService.getMyProfile();
+          setProfileId(studentProfile.studentId);
+          
+          const bookingsData = await bookingService.getBookingsByStudent(studentProfile.studentId);
+          setBookings(bookingsData);
+        } catch (err) {
+          console.error('Student profile error:', err);
+          setError('Please create your student profile first');
+          setTimeout(() => navigate('/student-profile'), 2000);
+        }
+      } else if (user?.accountType === 'mentor') {
+        try {
+          const mentorProfile = await mentorService.getMyProfile();
+          console.log('✅ Mentor profile loaded:', mentorProfile);
+          
+          setProfileId(mentorProfile.mentorId);
+          
+          const bookingsData = await bookingService.getBookingsByMentor(mentorProfile.mentorId);
+          setBookings(bookingsData);
+          
+          const tasksData = await taskService.getTasksByMentor(mentorProfile.mentorId);
+          setTasks(tasksData);
+        } catch (err) {
+          console.error('Mentor profile error:', err);
+          setError('Please create your mentor profile first');
+          setTimeout(() => navigate('/mentor-profile'), 2000);
+        }
       }
     } catch (err) {
-      setError(err.message || 'Failed to load dashboard data');
       console.error('Dashboard error:', err);
+      setError(err.message || 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
@@ -43,8 +66,8 @@ const Dashboard = () => {
 
   const handleAcceptBooking = async (bookingId) => {
     try {
-      await bookingService.acceptBooking(bookingId, user.userId);
-      fetchDashboardData();
+      await bookingService.acceptBooking(bookingId, profileId);
+      await fetchDashboardData();
     } catch (err) {
       setError(err.message || 'Failed to accept booking');
     }
@@ -52,8 +75,8 @@ const Dashboard = () => {
 
   const handleDeclineBooking = async (bookingId) => {
     try {
-      await bookingService.declineBooking(bookingId, user.userId);
-      fetchDashboardData();
+      await bookingService.declineBooking(bookingId, profileId);
+      await fetchDashboardData();
     } catch (err) {
       setError(err.message || 'Failed to decline booking');
     }
@@ -61,8 +84,8 @@ const Dashboard = () => {
 
   const handleCancelBooking = async (bookingId) => {
     try {
-      await bookingService.cancelBooking(bookingId, user.userId, user.role);
-      fetchDashboardData();
+      await bookingService.cancelBooking(bookingId, profileId, user.accountType);
+      await fetchDashboardData();
     } catch (err) {
       setError(err.message || 'Failed to cancel booking');
     }
@@ -70,15 +93,17 @@ const Dashboard = () => {
 
   const getStatusBadge = (status) => {
     const statusStyles = {
-      PENDING: 'bg-yellow-100 text-yellow-800',
-      ACCEPTED: 'bg-green-100 text-green-800',
-      DECLINED: 'bg-red-100 text-red-800',
-      CANCELLED: 'bg-gray-100 text-gray-800',
-      COMPLETED: 'bg-blue-100 text-blue-800'
+      pending: 'bg-yellow-100 text-yellow-800',
+      accepted: 'bg-green-100 text-green-800',
+      declined: 'bg-red-100 text-red-800',
+      cancelled: 'bg-gray-100 text-gray-800',
+      completed: 'bg-blue-100 text-blue-800'
     };
 
+    const normalizedStatus = status?.toLowerCase();
+
     return (
-      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusStyles[status] || 'bg-gray-100 text-gray-800'}`}>
+      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusStyles[normalizedStatus] || 'bg-gray-100 text-gray-800'}`}>
         {status}
       </span>
     );
@@ -86,21 +111,21 @@ const Dashboard = () => {
 
   const filteredBookings = statusFilter === 'all' 
     ? bookings 
-    : bookings.filter(booking => booking.status === statusFilter);
+    : bookings.filter(booking => booking.status?.toLowerCase() === statusFilter.toLowerCase());
 
   const getStatistics = () => {
-    if (user?.role === 'student') {
+    if (user?.accountType === 'student') {
       return {
         total: bookings.length,
-        pending: bookings.filter(b => b.status === 'PENDING').length,
-        accepted: bookings.filter(b => b.status === 'ACCEPTED').length,
-        completed: bookings.filter(b => b.status === 'COMPLETED').length
+        pending: bookings.filter(b => b.status?.toLowerCase() === 'pending').length,
+        accepted: bookings.filter(b => b.status?.toLowerCase() === 'accepted').length,
+        completed: bookings.filter(b => b.status?.toLowerCase() === 'completed').length
       };
     } else {
       return {
         total: bookings.length,
-        pending: bookings.filter(b => b.status === 'PENDING').length,
-        accepted: bookings.filter(b => b.status === 'ACCEPTED').length,
+        pending: bookings.filter(b => b.status?.toLowerCase() === 'pending').length,
+        accepted: bookings.filter(b => b.status?.toLowerCase() === 'accepted').length,
         tasks: tasks.length
       };
     }
@@ -151,10 +176,10 @@ const Dashboard = () => {
         </div>
         <div className="bg-white rounded-lg shadow p-6">
           <div className="text-sm font-medium text-gray-600">
-            {user?.role === 'mentor' ? 'My Tasks' : 'Completed'}
+            {user?.accountType === 'mentor' ? 'My Tasks' : 'Completed'}
           </div>
           <div className="mt-2 text-3xl font-bold text-blue-600">
-            {user?.role === 'mentor' ? stats.tasks : stats.completed}
+            {user?.accountType === 'mentor' ? stats.tasks : stats.completed}
           </div>
         </div>
       </div>
@@ -173,7 +198,7 @@ const Dashboard = () => {
             >
               Bookings ({bookings.length})
             </button>
-            {user?.role === 'mentor' && (
+            {user?.accountType === 'mentor' && (
               <button
                 onClick={() => setActiveTab('tasks')}
                 className={`px-6 py-4 text-sm font-medium border-b-2 ${
@@ -191,7 +216,6 @@ const Dashboard = () => {
         {/* Bookings Tab */}
         {activeTab === 'bookings' && (
           <div className="p-6">
-            {/* Status Filter */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Filter by Status
@@ -202,19 +226,18 @@ const Dashboard = () => {
                 className="block w-full md:w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               >
                 <option value="all">All Statuses</option>
-                <option value="PENDING">Pending</option>
-                <option value="ACCEPTED">Accepted</option>
-                <option value="DECLINED">Declined</option>
-                <option value="CANCELLED">Cancelled</option>
-                <option value="COMPLETED">Completed</option>
+                <option value="pending">Pending</option>
+                <option value="accepted">Accepted</option>
+                <option value="declined">Declined</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="completed">Completed</option>
               </select>
             </div>
 
-            {/* Bookings List */}
             {filteredBookings.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500">No bookings found</p>
-                {user?.role === 'student' && (
+                {user?.accountType === 'student' && (
                   <button
                     onClick={() => navigate('/search')}
                     className="mt-4 inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md"
@@ -233,24 +256,26 @@ const Dashboard = () => {
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex-1">
                         <h3 className="text-lg font-semibold text-gray-900">
-                          {booking.task?.title || 'Task'}
+                          {booking.taskTitle || 'Task'}
                         </h3>
                         <p className="text-sm text-gray-600 mt-1">
-                          {user?.role === 'student' 
-                            ? `Mentor: ${booking.mentor?.name || 'N/A'}`
-                            : `Student: ${booking.student?.name || 'N/A'}`
+                          {user?.accountType === 'student' 
+                            ? `Mentor: ${booking.mentorName || 'N/A'}`
+                            : `Student: ${booking.studentName || 'N/A'}`
                           }
                         </p>
                         <p className="text-sm text-gray-500 mt-1">
-                          Scheduled: {new Date(booking.scheduledTime).toLocaleString()}
+                          Scheduled: {new Date(booking.proposedDatetime).toLocaleString()}
+                        </p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Duration: {booking.taskDurationMinutes} minutes
                         </p>
                       </div>
                       {getStatusBadge(booking.status)}
                     </div>
 
-                    {/* Actions */}
                     <div className="flex gap-3 mt-4">
-                      {user?.role === 'mentor' && booking.status === 'PENDING' && (
+                      {user?.accountType === 'mentor' && booking.status?.toLowerCase() === 'pending' && (
                         <>
                           <button
                             onClick={() => handleAcceptBooking(booking.bookingId)}
@@ -266,7 +291,7 @@ const Dashboard = () => {
                           </button>
                         </>
                       )}
-                      {(booking.status === 'PENDING' || booking.status === 'ACCEPTED') && (
+                      {(booking.status?.toLowerCase() === 'pending' || booking.status?.toLowerCase() === 'accepted') && (
                         <button
                           onClick={() => handleCancelBooking(booking.bookingId)}
                           className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md text-sm font-medium transition"
@@ -283,7 +308,7 @@ const Dashboard = () => {
         )}
 
         {/* Tasks Tab (Mentor Only) */}
-        {activeTab === 'tasks' && user?.role === 'mentor' && (
+        {activeTab === 'tasks' && user?.accountType === 'mentor' && (
           <div className="p-6">
             {tasks.length === 0 ? (
               <div className="text-center py-12">
@@ -300,8 +325,16 @@ const Dashboard = () => {
                 {tasks.map((task) => (
                   <div
                     key={task.taskId}
-                    className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition"
+                    className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition cursor-pointer"
+                    onClick={() => navigate('/task-creation')}
                   >
+                    {task.imageUrl && (
+                      <img 
+                        src={`http://localhost:8080${task.imageUrl}`} 
+                        alt={task.title}
+                        className="w-full h-48 object-cover rounded-md mb-4"
+                      />
+                    )}
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
                       {task.title}
                     </h3>
@@ -315,11 +348,6 @@ const Dashboard = () => {
                       <div>
                         <span className="font-medium">Duration:</span> {task.durationMinutes} min
                       </div>
-                      {task.imageUrls && task.imageUrls.length > 0 && (
-                        <div>
-                          <span className="font-medium">Images:</span> {task.imageUrls.length}
-                        </div>
-                      )}
                     </div>
                   </div>
                 ))}

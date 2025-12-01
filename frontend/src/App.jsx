@@ -9,17 +9,15 @@ import MentorProfile from './pages/MentorProfile';
 import TaskCreation from './pages/TaskCreation';
 import PublicMentorProfile from './pages/PublicMentorProfile';
 import Dashboard from './pages/Dashboard';
-import Search from './pages/Search';
+import Search from './pages/Search'; 
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <div className="min-h-screen bg-gray-50">
-          {/* Navigation Bar - Shows on all pages */}
           <Navbar />
 
-          {/* Main Content */}
           <div className="py-6">
             <Routes>
               {/* Public Routes */}
@@ -27,7 +25,26 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/mentor/:id" element={<PublicMentorProfile />} />
-              <Route path="/search" element={<Search />} />
+
+              {/* ✅ Add Search Route - Protected for authenticated users */}
+              <Route
+                path="/search"
+                element={
+                  <ProtectedRoute>
+                    <Search />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* ✅ Dashboard Route - Protected for authenticated users */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Protected Student Routes */}
               <Route
@@ -38,14 +55,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute requiredRole="student">
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
 
               {/* Protected Mentor Routes */}
               <Route
@@ -53,14 +62,6 @@ function App() {
                 element={
                   <ProtectedRoute requiredRole="mentor">
                     <MentorProfile />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/mentor-dashboard"
-                element={
-                  <ProtectedRoute requiredRole="mentor">
-                    <Dashboard />
                   </ProtectedRoute>
                 }
               />
@@ -83,7 +84,6 @@ function App() {
   );
 }
 
-// Simple Home Page Component
 const Home = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -106,12 +106,6 @@ const Home = () => {
             className="inline-block bg-white hover:bg-gray-50 text-indigo-600 border-2 border-indigo-600 px-8 py-3 rounded-md text-lg font-medium transition"
           >
             Sign In
-          </Link>
-          <Link
-            to="/search"
-            className="inline-block bg-gray-100 hover:bg-gray-200 text-gray-900 px-8 py-3 rounded-md text-lg font-medium transition"
-          >
-            Browse Mentors
           </Link>
         </div>
       </div>

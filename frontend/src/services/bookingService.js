@@ -2,11 +2,10 @@ import api from './api';
 import authService from './authService';
 
 const getAuthHeaders = () => ({
-  'Authorization': `Basic ${authService.getCredentials()}` // ✅ Add ()
+  'Authorization': `Basic ${authService.getCredentials()}`
 });
 
 const bookingService = {
-  // Create booking (student only)
   createBooking: async (bookingData) => {
     try {
       const response = await api.post('/bookings', bookingData, {
@@ -18,7 +17,6 @@ const bookingService = {
     }
   },
 
-  // Accept booking (mentor only)
   acceptBooking: async (bookingId, mentorId) => {
     try {
       const response = await api.put(`/bookings/${bookingId}/accept?mentorId=${mentorId}`, null, {
@@ -30,7 +28,6 @@ const bookingService = {
     }
   },
 
-  // Decline booking (mentor only)
   declineBooking: async (bookingId, mentorId) => {
     try {
       const response = await api.put(`/bookings/${bookingId}/decline?mentorId=${mentorId}`, null, {
@@ -42,7 +39,6 @@ const bookingService = {
     }
   },
 
-  // Cancel booking (student or mentor)
   cancelBooking: async (bookingId, userId, userType) => {
     try {
       const response = await api.put(
@@ -58,7 +54,6 @@ const bookingService = {
     }
   },
 
-  // Get booking by ID
   getBookingById: async (bookingId) => {
     try {
       const response = await api.get(`/bookings/${bookingId}`, {
@@ -70,7 +65,6 @@ const bookingService = {
     }
   },
 
-  // Get bookings by student
   getBookingsByStudent: async (studentId) => {
     try {
       const response = await api.get(`/bookings/student/${studentId}`, {
@@ -82,7 +76,6 @@ const bookingService = {
     }
   },
 
-  // Get bookings by mentor
   getBookingsByMentor: async (mentorId, status = null) => {
     try {
       const url = status 
@@ -98,7 +91,6 @@ const bookingService = {
     }
   },
 
-  // Get bookings by task
   getBookingsByTask: async (taskId) => {
     try {
       const response = await api.get(`/bookings/task/${taskId}`, {
@@ -110,7 +102,6 @@ const bookingService = {
     }
   },
 
-  // Delete booking
   deleteBooking: async (bookingId) => {
     try {
       await api.delete(`/bookings/${bookingId}`, {
