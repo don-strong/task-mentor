@@ -17,20 +17,20 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async(email, password) => {
-    try{
+    try {
       const userData = await authService.login(email, password);
       setUser(userData);
       return userData;
-    }catch(error){
+    } catch(error) {
       throw error;
     }
   };
 
   const register = async (userData) => {
-    try{
+    try {
       const newUser = await authService.register(userData);
       return newUser;
-    }catch (error){
+    } catch (error) {
       throw error;
     }
   };

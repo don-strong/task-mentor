@@ -41,22 +41,40 @@ const Navbar = () => {
                 {user?.accountType === 'student' && (
                   <>
                     <Link
+                      to="/dashboard"
+                      className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/search"
+                      className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
+                    >
+                      Search
+                    </Link>
+                    <Link
                       to="/student-profile"
                       className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
                     >
                       My Profile
-                    </Link>
-                    <Link
-                      to="/discover"
-                      className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
-                    >
-                      Find Mentors
                     </Link>
                   </>
                 )}
 
                 {user?.accountType === 'mentor' && (
                   <>
+                    <Link
+                      to="/mentor-dashboard"
+                      className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/search"
+                      className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
+                    >
+                      Search
+                    </Link>
                     <Link
                       to="/mentor-profile"
                       className="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
@@ -145,23 +163,44 @@ const Navbar = () => {
                 {user?.accountType === 'student' && (
                   <>
                     <Link
+                      to="/dashboard"
+                      className="block px-3 py-2 text-gray-700 hover:bg-indigo-50 rounded-md"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/search"
+                      className="block px-3 py-2 text-gray-700 hover:bg-indigo-50 rounded-md"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Search
+                    </Link>
+                    <Link
                       to="/student-profile"
                       className="block px-3 py-2 text-gray-700 hover:bg-indigo-50 rounded-md"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       My Profile
                     </Link>
-                    <Link
-                      to="/discover"
-                      className="block px-3 py-2 text-gray-700 hover:bg-indigo-50 rounded-md"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Find Mentors
-                    </Link>
                   </>
                 )}
                 {user?.accountType === 'mentor' && (
                   <>
+                    <Link
+                      to="/mentor-dashboard"
+                      className="block px-3 py-2 text-gray-700 hover:bg-indigo-50 rounded-md"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/search"
+                      className="block px-3 py-2 text-gray-700 hover:bg-indigo-50 rounded-md"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Search
+                    </Link>
                     <Link
                       to="/mentor-profile"
                       className="block px-3 py-2 text-gray-700 hover:bg-indigo-50 rounded-md"
