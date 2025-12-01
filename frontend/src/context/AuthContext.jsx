@@ -17,14 +17,22 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async(email, password) => {
-    const userData = await authService.login(email, password);
-    setUser(userData);
-    return userData;
+    try {
+      const userData = await authService.login(email, password);
+      setUser(userData);
+      return userData;
+    } catch(error) {
+      throw error;
+    }
   };
 
   const register = async (userData) => {
-    const newUser = await authService.register(userData);
-    return newUser;
+    try {
+      const newUser = await authService.register(userData);
+      return newUser;
+    } catch (error) {
+      throw error;
+    }
   };
 
   const logout = () => {
