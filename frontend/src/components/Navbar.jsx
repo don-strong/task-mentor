@@ -98,10 +98,9 @@ const Navbar = () => {
                   <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">
                     {user?.accountType}
                   </span>
-                  {/* ✅ Fixed logout button styling */}
                   <button
                     onClick={handleLogout}
-                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition"
+                    className="bg-indigo-600 hover:bg-indigo-900 text-white px-4 py-2 rounded-md text-sm font-medium transition"
                   >
                     Logout
                   </button>
