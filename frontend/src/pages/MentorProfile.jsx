@@ -162,7 +162,7 @@ function MentorProfile() {
                 <button
                   onClick={() => setIsEditing(true)}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                  className="px-4 py-2 border-2 border-indigo-800 text-black bg-indigo-800 rounded-md hover:bg-indigo-900 active:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                 >
                   Edit Profile
                 </button>
@@ -171,7 +171,7 @@ function MentorProfile() {
                 <button
                   onClick={() => setIsEditing(true)}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                  className="px-4 py-2 border-2 border-indigo-800 text-black bg-indigo-800 rounded-md hover:bg-indigo-900 active:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                 >
                   Create Profile
                 </button>
@@ -202,7 +202,7 @@ function MentorProfile() {
                     value={formData.name}
                     onChange={handleChange}
                     disabled={!isEditing || isLoading}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                   {errors.name && (
                     <p className="mt-1 text-sm text-red-600">{errors.name}</p>
@@ -220,7 +220,7 @@ function MentorProfile() {
                     value={formData.bio}
                     onChange={handleChange}
                     disabled={!isEditing || isLoading}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                     placeholder="Tell students about your background..."
                   />
                 </div>
@@ -242,7 +242,7 @@ function MentorProfile() {
                     value={formData.roleTitle}
                     onChange={handleChange}
                     disabled={!isEditing || isLoading}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                     placeholder="Senior Software Engineer"
                   />
                 </div>
@@ -258,7 +258,7 @@ function MentorProfile() {
                     value={formData.company}
                     onChange={handleChange}
                     disabled={!isEditing || isLoading}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                     placeholder="Tech Corp"
                   />
                 </div>
@@ -274,7 +274,7 @@ function MentorProfile() {
                     value={formData.yearsExperience}
                     onChange={handleChange}
                     disabled={!isEditing || isLoading}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                     placeholder="8"
                   />
                   {errors.yearsExperience && (
@@ -296,7 +296,7 @@ function MentorProfile() {
                 value={formData.industries}
                 onChange={handleChange}
                 disabled={!isEditing || isLoading}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 placeholder="Technology, Finance, Healthcare"
               />
               <p className="mt-1 text-sm text-gray-500">
@@ -315,7 +315,7 @@ function MentorProfile() {
                 value={formData.expertiseAreas}
                 onChange={handleChange}
                 disabled={!isEditing || isLoading}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 placeholder="Web Development, System Design, Career Guidance"
               />
               <p className="mt-1 text-sm text-gray-500">
@@ -335,7 +335,7 @@ function MentorProfile() {
                 value={formData.profilePhotoUrl}
                 onChange={handleChange}
                 disabled={!isEditing || isLoading}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 placeholder="https://example.com/photo.jpg"
               />
             </div>
@@ -354,7 +354,7 @@ function MentorProfile() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                  className="px-4 py-2 border-2 border-indigo-800 text-black bg-indigo-800 rounded-md hover:bg-indigo-900 active:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                 >
                   {isLoading ? 'Saving...' : hasProfile ? 'Save Changes' : 'Create Profile'}
                 </button>

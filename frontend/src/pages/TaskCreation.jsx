@@ -208,7 +208,7 @@ function TaskCreation() {
             <button
               onClick={() => setIsCreating(true)}
               disabled={isLoading}
-              className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+              className="px-6 py-3 border-2 border-indigo-800 text-black bg-indigo-800 rounded-md hover:bg-indigo-900 active:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
             >
               + Create New Task
             </button>
@@ -238,7 +238,7 @@ function TaskCreation() {
                   value={newTask.title}
                   onChange={handleChange}
                   disabled={isLoading}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
                   placeholder="e.g., Resume Review"
                 />
                 {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
@@ -255,7 +255,7 @@ function TaskCreation() {
                   value={newTask.description}
                   onChange={handleChange}
                   disabled={isLoading}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
                   placeholder="Describe what you'll provide in this session..."
                 />
                 {errors.description && (
@@ -274,7 +274,7 @@ function TaskCreation() {
                     value={newTask.category}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
                   >
                     <option value="">Select category</option>
                     {categories.map((cat) => (
@@ -299,7 +299,7 @@ function TaskCreation() {
                     value={newTask.durationMinutes}
                     onChange={handleChange}
                     disabled={isLoading}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50"
                     placeholder="30"
                     step="15"
                   />
@@ -324,7 +324,7 @@ function TaskCreation() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                  className="px-4 py-2 border-2 border-indigo-800 text-black bg-indigo-800 rounded-md hover:bg-indigo-900 active:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                 >
                   {isLoading ? 'Creating...' : 'Create Task'}
                 </button>
