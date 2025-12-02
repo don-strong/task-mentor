@@ -4,11 +4,14 @@ import com.task_mentor.task_mentor.dto.MentorCreateRequest;
 import com.task_mentor.task_mentor.dto.MentorUpdateRequest;
 import com.task_mentor.task_mentor.dto.MentorSearchDTO;
 import com.task_mentor.task_mentor.entity.Mentor;
+import com.task_mentor.task_mentor.entity.User;
+import com.task_mentor.task_mentor.repository.UserRepository;
 import com.task_mentor.task_mentor.service.MentorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,6 +26,9 @@ public class MentorController {
 
     @Autowired
     private MentorService mentorService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @PreAuthorize("hasRole('MENTOR')")
     @PostMapping
@@ -45,6 +51,24 @@ public class MentorController {
         }
     }
 
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('MENTOR')")
+    public ResponseEntity<?> getMyMentorProfile(Authentication authentication) {
+        try {
+            String email = authentication.getName();
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            Mentor mentor = mentorService.getMentorByUserId(user.getUserId());
+            return ResponseEntity.ok(mentor);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(createErrorResponse("Mentor profile not found. Please create your profile first."));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Error retrieving mentor profile: " + e.getMessage()));
+        }
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getMentorById(@PathVariable Long id) {
@@ -56,7 +80,6 @@ public class MentorController {
                     .body(createErrorResponse(e.getMessage()));
         }
     }
-
 
     @GetMapping
     public ResponseEntity<List<Mentor>> getAllMentors() {
@@ -98,7 +121,6 @@ public class MentorController {
                     .body(createErrorResponse(e.getMessage()));
         }
     }
-
 
     private Map<String, String> createErrorResponse(String message) {
         Map<String, String> error = new HashMap<>();

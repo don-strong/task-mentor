@@ -148,7 +148,7 @@ function MentorProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-indigo-600 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="bg-white shadow rounded-lg">
           {/* Header */}
@@ -162,6 +162,7 @@ function MentorProfile() {
                 <button
                   onClick={() => setIsEditing(true)}
                   disabled={isLoading}
+                  style={{ backgroundColor: '#581c87' }}
                   className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                 >
                   Edit Profile
@@ -171,7 +172,7 @@ function MentorProfile() {
                 <button
                   onClick={() => setIsEditing(true)}
                   disabled={isLoading}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 "
                 >
                   Create Profile
                 </button>

@@ -2,10 +2,21 @@ import api from './api';
 import authService from './authService';
 
 const getAuthHeaders = () => ({
-  'Authorization': `Basic ${authService.getCredentials()}` 
+  'Authorization': `Basic ${authService.getCredentials()}`
 });
 
 const mentorService = {
+  getMyProfile: async () => {
+    try {
+      const response = await api.get('/mentors/me', {
+        headers: getAuthHeaders()
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
   createProfile: async (profileData) => {
     try {
       const response = await api.post('/mentors', profileData, {

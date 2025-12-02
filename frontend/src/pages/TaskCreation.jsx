@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import taskService from '../services/taskService';
 import mentorService from '../services/mentorService';
 
 function TaskCreation() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [mentorId, setMentorId] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [isCreating, setIsCreating] = useState(false);
@@ -38,20 +40,22 @@ function TaskCreation() {
   const loadMentorAndTasks = async () => {
     setIsLoading(true);
     try {
-      // Get mentor profile
-      const mentors = await mentorService.getAllMentors();
-      const myMentor = mentors.find(m => m.user?.userId === user?.userId);
+      // ✅ Use the new /mentors/me endpoint
+      const mentorProfile = await mentorService.getMyProfile();
+      console.log('✅ Mentor profile loaded:', mentorProfile);
       
-      if (myMentor) {
-        setMentorId(myMentor.mentorId);
-        // Load tasks for this mentor
-        const mentorTasks = await taskService.getTasksByMentor(myMentor.mentorId);
-        setTasks(mentorTasks);
-      } else {
-        alert('Please create a mentor profile first');
-      }
+      setMentorId(mentorProfile.mentorId);
+      
+      // Load tasks for this mentor
+      const mentorTasks = await taskService.getTasksByMentor(mentorProfile.mentorId);
+      setTasks(mentorTasks);
+      
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('Error loading mentor profile:', error);
+      setErrors({ submit: 'Please create your mentor profile first' });
+      
+      // Redirect to mentor profile creation after 2 seconds
+      setTimeout(() => navigate('/mentor-profile'), 2000);
     } finally {
       setIsLoading(false);
     }
@@ -102,7 +106,7 @@ function TaskCreation() {
     }
 
     if (!mentorId) {
-      alert('Please create a mentor profile first');
+      setErrors({ submit: 'Please create a mentor profile first' });
       return;
     }
 
@@ -181,11 +185,12 @@ function TaskCreation() {
     );
   }
 
-  if (!mentorId) {
+  if (!mentorId && !isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">Please create a mentor profile first</p>
+          <p className="text-red-600 text-lg mb-4">Please create a mentor profile first</p>
+          <p className="text-gray-600">Redirecting...</p>
         </div>
       </div>
     );
@@ -201,6 +206,13 @@ function TaskCreation() {
             Create and manage the tasks you offer to students
           </p>
         </div>
+
+        {/* Error Message */}
+        {errors.submit && (
+          <div className="mb-6 rounded-md bg-red-50 p-4">
+            <p className="text-sm text-red-800">{errors.submit}</p>
+          </div>
+        )}
 
         {/* Create Task Button */}
         {!isCreating && (
@@ -219,12 +231,6 @@ function TaskCreation() {
         {isCreating && (
           <div className="bg-white shadow rounded-lg p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Create New Task</h2>
-            
-            {errors.submit && (
-              <div className="mb-4 rounded-md bg-red-50 p-4">
-                <p className="text-sm text-red-800">{errors.submit}</p>
-              </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>

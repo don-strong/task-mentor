@@ -144,6 +144,30 @@ public class TaskController {
         }
     }
 
+
+    @PreAuthorize("hasRole('MENTOR')")
+    @PostMapping(path = "/json", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> createTaskJson(@RequestBody @Valid TaskCreateRequest request) {
+        try {
+            Task task = new Task();
+            task.setTitle(request.getTitle());
+            task.setDescription(request.getDescription());
+            task.setDurationMinutes(request.getDurationMinutes());
+            task.setCategory(request.getCategory());
+
+            Task createdTask = taskService.createTask(request.getMentorId(), task);
+            TaskResponse response = TaskResponse.fromEntity(createdTask);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Error creating task: " + e.getMessage()));
+        }
+    }
+
     @PreAuthorize("hasRole('MENTOR')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateTask(
