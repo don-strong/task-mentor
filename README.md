@@ -16,7 +16,7 @@
 - [Installation & Setup](#installation--setup)
 - [Repository Structure](#repository-structure)
 - [Tech Stack](#tech-stack)
-- [Known Issues](#known-issues)
+- [Deployment Notes](#deployment-notes)
 
 ---
 
@@ -102,7 +102,7 @@ Task Mentor is a marketplace where mentors offer a "task menu" of specific servi
 
 | Component | Version | Download Link |
 |-----------|---------|---------------|
-| **Java JDK** | 17 or higher | [Oracle JDK](https://www.oracle.com/java/technologies/downloads/) |
+| **Java JDK** | 21 or higher | [Oracle JDK](https://www.oracle.com/java/technologies/downloads/) |
 | **Node.js** | 18.x or higher | [nodejs.org](https://nodejs.org/) |
 | **PostgreSQL** | 14 or higher | [postgresql.org](https://www.postgresql.org/download/) |
 | **Git** | Latest | [git-scm.com](https://git-scm.com/) |
@@ -258,7 +258,7 @@ task-mentor/
 
 ### Backend
 - **Framework:** Spring Boot 3.x
-- **Language:** Java 17
+- **Language:** Java 21
 - **Database:** PostgreSQL 14
 - **ORM:** Spring Data JPA / Hibernate
 - **Security:** Spring Security + JWT
@@ -281,41 +281,14 @@ task-mentor/
 
 ---
 
-## ⚠️ Known Issues
-
-### Database Sequence Issue (Local Development Only)
-
-**Symptom:** Error when creating new profiles: `duplicate key value violates unique constraint`
-
-**Cause:** Hibernate sequences out of sync
-
-**Solution 1 - Clean Database (Recommended):**
-```bash
-# Stop backend (Ctrl+C)
-psql postgres -c "DROP DATABASE taskmentor;"
-psql postgres -c "CREATE DATABASE taskmentor;"
-# Restart backend - Hibernate recreates tables
-```
-
-**Solution 2 - Fix Sequences:**
-```bash
-psql taskmentor -c "
-SELECT setval('users_user_id_seq', (SELECT MAX(user_id) FROM users));
-SELECT setval('students_student_id_seq', (SELECT COALESCE(MAX(student_id), 0) FROM students));
-SELECT setval('mentors_mentor_id_seq', (SELECT MAX(mentor_id) FROM mentors));
-SELECT setval('tasks_task_id_seq', (SELECT COALESCE(MAX(task_id), 0) FROM tasks));
-SELECT setval('bookings_booking_id_seq', (SELECT COALESCE(MAX(booking_id), 0) FROM bookings));
-"
-```
-
-**Note:** This issue does NOT affect fresh production deployments.
-
-### Deployment Configuration
+## 🚀 Deployment Notes
 
 If deploying to Render/Netlify, you must configure:
 - **Backend:** Set `DATABASE_URL` and `JWT_SECRET` environment variables
 - **Frontend:** Set `VITE_API_BASE_URL` to your backend URL
 - **CORS:** Update allowed origins in backend SecurityConfig
+
+For detailed deployment instructions, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
 
 ---
 
