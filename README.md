@@ -171,11 +171,12 @@ The backend will start on **http://localhost:8080**
 
 #### 3.1 Verify Backend is Running
 
-Open a new terminal and run:
-```bash
-curl http://localhost:8080/api/health
-# Should return: {"status":"UP"}
+Check the terminal where you started the backend. You should see:
 ```
+Started TaskMentorApplication in X.XXX seconds
+```
+
+The backend is now running on **http://localhost:8080**
 
 ### Step 4: Frontend Setup
 
@@ -294,6 +295,8 @@ For detailed deployment instructions, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE
 
 ## 📚 Additional Documentation
 
+For more detailed information, see these supplementary documents in the repository:
+
 - **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Detailed local setup instructions
 - **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Render/Netlify deployment guide  
 - **[TESTING_SUMMARY_DEC2.md](TESTING_SUMMARY_DEC2.md)** - QA testing report
@@ -324,5 +327,5 @@ This project was created for academic purposes as part of CS 301 coursework.
 
 ---
 
-**Last Updated:** December 3, 2025  
+**Last Updated:** December 6, 2025  
 **Project Status:** ✅ MVP Complete, Ready for Grading
